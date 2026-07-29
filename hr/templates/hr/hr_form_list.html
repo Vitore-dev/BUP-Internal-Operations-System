@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block title %}HR Forms{% endblock %}
+{% block page_icon %}📄{% endblock %}
+{% block page_heading %}HR Forms{% endblock %}
+
+{% block content %}
+<div class="page-title">HR Forms</div>
+<div class="page-sub">Upload and manage official HR forms available to all staff.</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>All Forms</h2>
+    {% if request.user.role in 'ADMIN,HR' %}
+    <a href="{% url 'hr:hr_form_upload' %}" class="btn btn-primary btn-sm">+ Upload Form</a>
+    {% endif %}
+  </div>
+  {% if forms %}
+  <table>
+    <thead>
+      <tr><th>Title</th><th>Description</th><th>Uploaded</th><th>Status</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for form in forms %}
+      <tr>
+        <td><b>{{ form.title }}</b></td>
+        <td>{{ form.description|default:"—" }}</td>
+        <td>{{ form.created_at|date:"d M Y" }}</td>
+        <td>
+          {% if form.is_active %}
+            <span class="badge badge-approved">Active</span>
+          {% else %}
+            <span class="badge badge-declined">Inactive</span>
+          {% endif %}
+        </td>
+        <td style="display:flex;gap:8px;">
+          {% if form.is_active %}
+          <a href="{% url 'hr:hr_form_download' form.pk %}" class="btn btn-gold btn-sm">⬇ Download</a>
+          {% endif %}
+          {% if request.user.role in 'ADMIN,HR' %}
+          <a href="{% url 'hr:hr_form_toggle' form.pk %}" class="btn btn-outline btn-sm">
+            {% if form.is_active %}Deactivate{% else %}Activate{% endif %}
+          </a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No HR forms uploaded yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

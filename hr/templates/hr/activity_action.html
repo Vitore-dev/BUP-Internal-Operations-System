@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Review Activity{% endblock %}
+{% block page_icon %}🎭{% endblock %}
+{% block page_heading %}Review Activity{% endblock %}
+
+{% block content %}
+<div class="page-title">Review Activity</div>
+<div class="card">
+  <div class="card-header"><h2>{{ activity.title }}</h2></div>
+  <div class="card-body">
+    <p><b>Proposed Date:</b> {{ activity.proposed_date|date:"d M Y" }}</p>
+    <p style="margin-top:8px;"><b>Estimated Cost:</b> BWP {{ activity.estimated_cost|default:"Not specified" }}</p>
+    <p style="margin-top:8px;"><b>Description:</b></p>
+    <p style="margin-top:4px;color:#444;">{{ activity.description }}</p>
+    <p style="margin-top:8px;"><b>Submitted by:</b> {{ activity.submitted_by.get_full_name }}</p>
+
+    <form method="POST" style="margin-top:24px;">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Comment (optional)</label>
+        <textarea name="director_comment" class="form-control" placeholder="Add a comment or reason..."></textarea>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" name="action" value="approve" class="btn btn-primary">✅ Approve</button>
+        <button type="submit" name="action" value="decline" class="btn btn-danger">✗ Decline</button>
+        <a href="{% url 'hr:activity_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

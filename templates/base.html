@@ -1,0 +1,44 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}BUP Ops{% endblock %} – BUP Internal System</title>
+  <link rel="stylesheet" href="{% static 'css/hr.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  {% block header_right %}
+  <div style="display:flex;align-items:center;gap:12px;margin-left:auto;">
+    <a href="{{ SAGE_URL|default:'#' }}"
+        target="_blank"
+        style="background:#C9A84C;color:#1B2A6B;padding:7px 14px;border-radius:7px;
+            font-size:12px;font-weight:700;text-decoration:none;">
+      🔗 Go to Sage
+    </a>
+    <a href="{% url 'core:home' %}"
+        style="color:#C9A84C;font-size:13px;text-decoration:none;">
+      ← Dashboard
+    </a>
+  </div>
+  {% endblock %}
+
+  <!-- MESSAGES -->
+  {% if messages %}
+  <div style="padding: 0 28px; margin-top: 16px;">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- MAIN CONTENT -->
+  <div class="main">
+    {% block content %}{% endblock %}
+  </div>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

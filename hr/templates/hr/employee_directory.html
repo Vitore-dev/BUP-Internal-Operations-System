@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Employee Directory{% endblock %}
+{% block page_icon %}👥{% endblock %}
+{% block page_heading %}Employee Directory{% endblock %}
+
+{% block content %}
+
+<div class="page-title">Employee Directory</div>
+<div class="page-sub">{{ total_count }} active employee{{ total_count|pluralize }} found</div>
+
+<!-- Filters -->
+<form method="GET" class="filters">
+  <div class="filter-group">
+    <label>Search</label>
+    <input type="text" name="search" value="{{ search }}" placeholder="Name or email...">
+  </div>
+  <div class="filter-group">
+    <label>Department</label>
+    <select name="department">
+      <option value="">All Departments</option>
+      {% for dept in departments %}
+        <option value="{{ dept }}" {% if department == dept %}selected{% endif %}>{{ dept }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Role</label>
+    <select name="role">
+      <option value="">All Roles</option>
+      {% for value, label in role_choices %}
+        <option value="{{ value }}" {% if role_filter == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">🔍 Search</button>
+  <a href="{% url 'hr:employee_directory' %}" class="btn btn-outline">Clear</a>
+</form>
+
+<!-- Table -->
+<div class="card">
+  <div class="card-header">
+    <h2>Active Employees</h2>
+  </div>
+  {% if employees %}
+  <table>
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th>Role</th>
+        <th>Department</th>
+        <th>Email</th>
+        <th>Date Joined</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for emp in employees %}
+      <tr>
+        <td>
+          <div class="name-cell">
+            <div class="avatar">
+              {{ emp.first_name|first|upper }}{{ emp.last_name|first|upper }}
+            </div>
+            {{ emp.get_full_name|default:emp.username }}
+          </div>
+        </td>
+        <td>
+          {% if emp.role == 'ADMIN' %}<span class="badge badge-admin">Admin</span>
+          {% elif emp.role == 'HR' %}<span class="badge badge-hr">HR</span>
+          {% elif emp.role == 'FINANCE' %}<span class="badge badge-finance">Finance</span>
+          {% elif emp.role == 'DIRECTOR' %}<span class="badge badge-director">Director</span>
+          {% elif emp.role == 'RECEPTION' %}<span class="badge badge-reception">Reception</span>
+          {% elif emp.role == 'OPS_MANAGER' %}<span class="badge badge-ops">Ops Manager</span>
+          {% elif emp.role == 'PI' %}<span class="badge badge-pi">PI</span>
+          {% else %}<span class="badge" style="background:#eee;color:#666;">{{ emp.role }}</span>
+          {% endif %}
+        </td>
+        <td>{{ emp.department|default:"—" }}</td>
+        <td>{{ emp.email|default:"—" }}</td>
+        <td>{{ emp.date_joined|date:"d M Y" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">
+    No employees found matching your search criteria.
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

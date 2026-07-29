@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}User Requests{% endblock %}
+{% block page_icon %}👤{% endblock %}
+{% block page_heading %}User Requests{% endblock %}
+
+{% block content %}
+<div class="page-title">User Requests</div>
+<div class="card">
+  <div class="card-header">
+    <h2>All Requests</h2>
+    {% if request.user.role in 'HR,ADMIN' %}
+    <a href="{% url 'hr:user_request_create' %}" class="btn btn-primary btn-sm">+ New Request</a>
+    {% endif %}
+  </div>
+  {% if requests %}
+  <table>
+    <thead>
+      <tr><th>Type</th><th>Employee</th><th>Email</th><th>Reason</th><th>Status</th><th>Submitted</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for req in requests %}
+      <tr>
+        <td>
+          {% if req.request_type == 'ADD' %}<span class="badge badge-approved">Add User</span>
+          {% else %}<span class="badge badge-declined">Remove User</span>{% endif %}
+        </td>
+        <td>{{ req.employee_name }}</td>
+        <td>{{ req.employee_email }}</td>
+        <td>{{ req.reason|truncatechars:40 }}</td>
+        <td>
+          {% if req.status == 'PENDING' %}<span class="badge badge-pending">Pending</span>
+          {% elif req.status == 'ACTIONED' %}<span class="badge badge-approved">Actioned</span>
+          {% else %}<span class="badge badge-declined">Declined</span>{% endif %}
+        </td>
+        <td>{{ req.created_at|date:"d M Y" }}</td>
+        <td>
+          {% if request.user.role == 'ADMIN' and req.status == 'PENDING' %}
+          <a href="{% url 'hr:user_request_action' req.pk %}" class="btn btn-primary btn-sm">Action</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No user requests submitted yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

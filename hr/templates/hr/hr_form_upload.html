@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Upload HR Form{% endblock %}
+{% block page_icon %}📄{% endblock %}
+{% block page_heading %}Upload HR Form{% endblock %}
+
+{% block content %}
+<div class="page-title">Upload HR Form</div>
+<div class="card">
+  <div class="card-header"><h2>Form Details</h2></div>
+  <div class="card-body">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Form Title *</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Leave Application Form" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea name="description" class="form-control" placeholder="Brief description of this form..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">File (PDF or Word) *</label>
+        <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx" required>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">⬆ Upload Form</button>
+        <a href="{% url 'hr:hr_form_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

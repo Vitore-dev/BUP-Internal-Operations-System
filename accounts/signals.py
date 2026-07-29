@@ -5,10 +5,6 @@ from django.conf import settings
 
 @receiver(user_logged_in)
 def populate_user_from_azure(sender, request, user, **kwargs):
-    """
-    After a successful Azure AD login, populate the CustomUser's
-    email, role, and department based on the claims in their session.
-    """
     id_token_claims = request.session.get('id_token_claims', {})
 
     if not id_token_claims:
@@ -18,18 +14,7 @@ def populate_user_from_azure(sender, request, user, **kwargs):
     azure_oid = id_token_claims.get('oid')
     groups = id_token_claims.get('groups', [])
 
-    updated = False
-
-    if email and user.email != email:
-        user.email = email
-        updated = True
-
-    if azure_oid and user.azure_id != azure_oid:
-        user.azure_id = azure_oid
-        updated = True
-
-    # Priority order matters if a user is in multiple groups during testing
-    role_priority = ['ADMIN', 'DIRECTOR', 'FINANCE', 'HR', 'PI']
+    role_priority = ['ADMIN', 'DIRECTOR', 'FINANCE', 'HR',  'PI']
 
     group_role_map = {
         settings.AZURE_GROUPS.get('ADMIN'): 'ADMIN',
@@ -48,9 +33,29 @@ def populate_user_from_azure(sender, request, user, **kwargs):
             assigned_role = role
             break
 
+    updated = False
+
+    if email and user.email != email:
+        user.email = email
+        updated = True
+
+    if azure_oid and user.azure_id != azure_oid:
+        user.azure_id = azure_oid
+        updated = True
+
     if assigned_role and user.role != assigned_role:
         user.role = assigned_role
         updated = True
 
     if updated:
         user.save()
+
+    # Write audit log entry for login
+    from core.utils import log_action, get_client_ip
+    from core.models import AuditLog
+    AuditLog.objects.create(
+        user=user,
+        action='USER_LOGIN',
+        description=f'{user.username} logged in via Azure AD',
+        ip_address=get_client_ip(request),
+    )

@@ -23,6 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('azure_auth.urls')),
     path('accounts/', include('accounts.urls', namespace='accounts')),
+    path('hr/', include('hr.urls', namespace='hr')),
     path('', include('core.urls')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
 ]

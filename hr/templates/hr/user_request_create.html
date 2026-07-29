@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}New User Request{% endblock %}
+{% block page_icon %}👤{% endblock %}
+{% block page_heading %}Submit User Request{% endblock %}
+
+{% block content %}
+<div class="page-title">Submit User Request</div>
+<div class="card">
+  <div class="card-header"><h2>Request Details</h2></div>
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Request Type *</label>
+        <select name="request_type" class="form-control" required>
+          {% for value, label in request_types %}
+          <option value="{{ value }}">{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Employee Full Name *</label>
+          <input type="text" name="employee_name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Employee Email *</label>
+          <input type="email" name="employee_email" class="form-control" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Department</label>
+          <input type="text" name="department" class="form-control" placeholder="e.g. Finance">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Working Date (if removing)</label>
+          <input type="date" name="last_working_date" class="form-control">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason *</label>
+        <textarea name="reason" class="form-control" required placeholder="Reason for this request..."></textarea>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">📤 Submit to IT Admin</button>
+        <a href="{% url 'hr:user_request_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

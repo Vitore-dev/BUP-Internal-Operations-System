@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Plan Activity{% endblock %}
+{% block page_icon %}🎭{% endblock %}
+{% block page_heading %}Plan Extracurricular Activity{% endblock %}
+
+{% block content %}
+<div class="page-title">Plan Activity</div>
+<div class="card">
+  <div class="card-header"><h2>Activity Details</h2></div>
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input type="text" name="title" class="form-control" placeholder="e.g. Team Building Day" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea name="description" class="form-control" placeholder="Describe the activity..." required></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Proposed Date *</label>
+          <input type="date" name="proposed_date" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Estimated Cost (BWP)</label>
+          <input type="number" name="estimated_cost" class="form-control" step="0.01" placeholder="e.g. 5000.00">
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">📤 Submit for Approval</button>
+        <a href="{% url 'hr:activity_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

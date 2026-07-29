@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Extracurricular Activities{% endblock %}
+{% block page_icon %}🎭{% endblock %}
+{% block page_heading %}Extracurricular Activities{% endblock %}
+
+{% block content %}
+<div class="page-title">Extracurricular Activities</div>
+<div class="card">
+  <div class="card-header">
+    <h2>All Activities</h2>
+    {% if request.user.role in 'ADMIN,HR' %}
+    <a href="{% url 'hr:activity_create' %}" class="btn btn-primary btn-sm">+ Plan Activity</a>
+    {% endif %}
+  </div>
+  {% if activities %}
+  <table>
+    <thead>
+      <tr><th>Title</th><th>Proposed Date</th><th>Est. Cost (BWP)</th><th>Status</th><th>Director Comment</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for activity in activities %}
+      <tr>
+        <td><b>{{ activity.title }}</b></td>
+        <td>{{ activity.proposed_date|date:"d M Y" }}</td>
+        <td>{{ activity.estimated_cost|default:"—" }}</td>
+        <td>
+          {% if activity.status == 'APPROVED' %}<span class="badge badge-approved">Approved</span>
+          {% elif activity.status == 'DECLINED' %}<span class="badge badge-declined">Declined</span>
+          {% elif activity.status == 'SUBMITTED' %}<span class="badge badge-pending">Awaiting Director</span>
+          {% else %}<span class="badge">Draft</span>{% endif %}
+        </td>
+        <td>{{ activity.director_comment|default:"—" }}</td>
+        <td>
+          {% if request.user.role == 'DIRECTOR' and activity.status == 'SUBMITTED' %}
+          <a href="{% url 'hr:activity_action' activity.pk %}" class="btn btn-primary btn-sm">Review</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No activities submitted yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

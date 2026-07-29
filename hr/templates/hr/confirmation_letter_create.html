@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generate Confirmation Letter{% endblock %}
+{% block page_icon %}📜{% endblock %}
+{% block page_heading %}Generate Confirmation Letter{% endblock %}
+
+{% block content %}
+<div class="page-title">Generate Confirmation Letter</div>
+<div class="page-sub">Fill in the details below. The letter will be generated as a PDF.</div>
+
+<div class="card">
+  <div class="card-header"><h2>Letter Details</h2></div>
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Employee *</label>
+          <select name="employee" class="form-control" required>
+            <option value="">Select employee...</option>
+            {% for emp in employees %}
+              <option value="{{ emp.id }}">{{ emp.get_full_name|default:emp.username }} ({{ emp.get_role_display|default:emp.role }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Salutation *</label>
+          <select name="salutation" class="form-control" required>
+            {% for value, label in salutation_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Employee ID / National ID *</label>
+          <input type="text" name="employee_id_number" class="form-control" placeholder="e.g. 123456789">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Job Title *</label>
+          <input type="text" name="job_title" class="form-control" placeholder="e.g. Research Assistant" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Annual Salary (BWP)</label>
+          <input type="number" name="annual_salary" class="form-control" placeholder="e.g. 120000.00" step="0.01">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Purpose</label>
+          <input type="text" name="purpose" class="form-control" placeholder="e.g. Bank confirmation, Visa application">
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 12px; font-size:14px; color:#1B2A6B;">Physical Address</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Plot Number</label>
+          <input type="text" name="plot_number" class="form-control" placeholder="e.g. 1234">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ward</label>
+          <input type="text" name="ward" class="form-control" placeholder="e.g. Tlokweng">
+        </div>
+      </div>
+
+      <h3 style="margin: 20px 0 12px; font-size:14px; color:#1B2A6B;">Postal Address</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">PO Box</label>
+          <input type="text" name="po_box" class="form-control" placeholder="e.g. PO Box 1234">
+        </div>
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input type="text" name="postal_city" class="form-control" value="Gaborone">
+        </div>
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:20px;">
+        <button type="submit" class="btn btn-primary">📄 Generate & Download PDF</button>
+        <a href="{% url 'hr:confirmation_letter_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

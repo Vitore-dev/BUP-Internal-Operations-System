@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Action User Request{% endblock %}
+{% block page_icon %}👤{% endblock %}
+{% block page_heading %}Action User Request{% endblock %}
+
+{% block content %}
+<div class="page-title">Action User Request</div>
+<div class="card">
+  <div class="card-header"><h2>{{ user_req.get_request_type_display }} – {{ user_req.employee_name }}</h2></div>
+  <div class="card-body">
+    <p><b>Email:</b> {{ user_req.employee_email }}</p>
+    <p style="margin-top:8px;"><b>Department:</b> {{ user_req.department|default:"Not specified" }}</p>
+    <p style="margin-top:8px;"><b>Reason:</b> {{ user_req.reason }}</p>
+    {% if user_req.last_working_date %}
+    <p style="margin-top:8px;"><b>Last Working Date:</b> {{ user_req.last_working_date|date:"d M Y" }}</p>
+    {% endif %}
+    <p style="margin-top:8px;"><b>Submitted by:</b> {{ user_req.submitted_by.get_full_name }}</p>
+
+    <form method="POST" style="margin-top:24px;">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Admin Comment</label>
+        <textarea name="admin_comment" class="form-control" placeholder="Optional comment..."></textarea>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" name="action" value="action" class="btn btn-primary">✅ Mark as Actioned</button>
+        <button type="submit" name="action" value="decline" class="btn btn-danger">✗ Decline</button>
+        <a href="{% url 'hr:user_request_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
