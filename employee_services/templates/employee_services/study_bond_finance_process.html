@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Process Payment{% endblock %}
+
+{% block content %}
+<div class="page-title">Process Payment — {{ application.program_title }}</div>
+<div class="card">
+  <div class="card-body">
+    <p><b>Amount Approved:</b> BWP {{ application.amount_paid_by_bup }}</p>
+    <form method="POST" enctype="multipart/form-data" style="margin-top:16px;">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Date of Payment</label>
+        {{ form.date_of_payment }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Receipt</label>
+        {{ form.payment_receipt }}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">Complete &amp; Notify</button>
+        <a href="{% url 'employee_services:study_bond_detail' application.pk %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

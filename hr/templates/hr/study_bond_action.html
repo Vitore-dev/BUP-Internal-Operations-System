@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Study Bond — {{ sb.requested_by.get_full_name }}</h2>
+ 
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+ 
+  <table class="table">
+    <tr><th>Program</th><td>{{ sb.program_title }}</td></tr>
+    <tr><th>Institution</th><td>{{ sb.institution }}</td></tr>
+    <tr><th>Period</th><td>{{ sb.period_start|date:"d M Y" }} – {{ sb.period_end|date:"d M Y" }}</td></tr>
+    <tr><th>Total cost</th><td>{{ sb.total_cost }}</td></tr>
+    <tr><th>Cost of subjects</th><td>{{ sb.subject_costs }}</td></tr>
+    <tr><th>Amount to be paid by BUP</th><td>{{ sb.amount_paid_by_bup }}</td></tr>
+    <tr><th>Payment date</th><td>{{ sb.payment_date|date:"d M Y"|default:"—" }}</td></tr>
+    {% if sb.payment_receipt %}
+    <tr><th>Receipt</th><td><a href="{{ sb.payment_receipt.url }}" target="_blank">View receipt</a></td></tr>
+    {% endif %}
+  </table>
+ 
+  {% if sb.status == 'PENDING' %}
+    <h4>Approval to Register</h4>
+    <p class="text-muted">
+      Confirm: program is relevant to the employee's role/development plan; provider is
+      accredited; employee has 6+ months' standing; supervisor notified if leave is involved.
+      HR will confirm the salary and tuition cap after your decision.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Reason (required if declining)</label>
+        <textarea name="decline_reason" class="form-control"></textarea>
+      </div>
+      <button type="submit" name="action" value="approve" class="btn btn-success">Approve — send to HR</button>
+      <button type="submit" name="action" value="decline" class="btn btn-danger">Decline</button>
+    </form>
+ 
+  {% elif sb.status == 'PENDING_HR_REVIEW' %}
+    <h4>HR Review</h4>
+    <p><strong>Approved by:</strong> {{ sb.approver_name }} ({{ sb.approver_job_title }}) on {{ sb.approved_at|date:"d M Y" }}</p>
+    <p class="text-muted">
+      Employee requested BWP {{ sb.amount_paid_by_bup }}. Confirm their actual base pay and
+      the resulting cap (10% of base pay or BWP 3000/yr equivalent, whichever is less).
+      This is the final step — forwarding registers the bond.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Verified annual base pay *</label>
+          <input type="number" step="0.01" name="hr_verified_salary" id="id_hr_salary" class="form-control">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Confirmed cap amount *</label>
+          <input type="number" step="0.01" name="hr_cap_amount" id="id_hr_cap" class="form-control">
+          <div class="form-text">Auto-fills to 10% of base pay when you tab out — override if BWP 3000/yr equivalent is lower.</div>
+        </div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">HR notes</label>
+        <textarea name="hr_notes" class="form-control"></textarea>
+      </div>
+      <button type="submit" name="action" value="forward" class="btn btn-success">Register</button>
+      <button type="submit" name="action" value="decline" class="btn btn-danger">Decline</button>
+    </form>
+    <script>
+      document.getElementById('id_hr_salary').addEventListener('change', function () {
+        const capField = document.getElementById('id_hr_cap');
+        if (!capField.value) {
+          capField.value = (parseFloat(this.value || 0) * 0.10).toFixed(2);
+        }
+      });
+    </script>
+ 
+  {% elif sb.status == 'REGISTERED' %}
+    <h4>Grade Verification</h4>
+    {% if sb.hr_cap_amount %}
+      <p><strong>HR-confirmed cap:</strong> BWP {{ sb.hr_cap_amount }} (base pay: {{ sb.hr_verified_salary }})</p>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Grade received *</label>
+        <input type="text" name="grade_received" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-success">Verify and complete</button>
+    </form>
+ 
+  {% else %}
+    <div class="alert alert-info">
+      Status: {{ sb.get_status_display }}. No action needed here.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
+ 
+
+
+
+
+
+
+

@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Apply for a Study Bond</h2>
+  <p class="text-muted">Operations requests go to the current Director. Research requests need a PI selected below.</p>
+ 
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+ 
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+ 
+    <div class="mb-3">
+      <label class="form-label">Department type *</label>
+      <select name="department_type" id="id_department_type" class="form-select" required>
+        <option value="">-- Select --</option>
+        {% for value, label in department_choices %}
+          <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+ 
+    <div class="mb-3" id="pi-field" style="display:none;">
+      <label class="form-label">PI responsible for this request *</label>
+      <select name="assigned_pi" class="form-select">
+        <option value="">-- Select PI --</option>
+        {% for pi in pi_choices %}
+          <option value="{{ pi.id }}">{{ pi.get_full_name }}</option>
+        {% endfor %}
+      </select>
+      <div class="form-text">No employee-to-PI mapping exists yet — please pick the right PI manually.</div>
+    </div>
+ 
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Period of study — start *</label>
+        <input type="date" name="period_start" class="form-control" required>
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Period of study — end *</label>
+        <input type="date" name="period_end" class="form-control" required>
+      </div>
+    </div>
+ 
+    <div class="mb-3">
+      <label class="form-label">Title of the program *</label>
+      <input type="text" name="program_title" class="form-control" required>
+    </div>
+ 
+    <div class="mb-3">
+      <label class="form-label">Institution *</label>
+      <input type="text" name="institution" class="form-control" required>
+    </div>
+ 
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Total cost of course/program *</label>
+        <input type="number" step="0.01" name="total_cost" class="form-control" required>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Cost of subjects (max 3/semester) *</label>
+        <input type="number" step="0.01" name="subject_costs" class="form-control" required>
+      </div>
+      <div class="col-md-4 mb-3">
+        <label class="form-label">Amount to be paid by BUP *</label>
+        <input type="number" step="0.01" name="amount_paid_by_bup" class="form-control" required>
+        <div class="form-text">Cap: 10% of base pay or BWP 3000/yr equivalent, whichever is less — checked by your approver.</div>
+      </div>
+    </div>
+ 
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Date of payment / last payment</label>
+        <input type="date" name="payment_date" class="form-control">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Payment receipt</label>
+        <input type="file" name="payment_receipt" class="form-control">
+      </div>
+    </div>
+ 
+    <button type="submit" class="btn btn-primary">Submit request</button>
+  </form>
+</div>
+ 
+<script>
+  // Only show the PI picker for Research requests.
+  const deptSelect = document.getElementById('id_department_type');
+  const piField = document.getElementById('pi-field');
+  function togglePiField() {
+    piField.style.display = deptSelect.value === 'RESEARCH' ? 'block' : 'none';
+  }
+  deptSelect.addEventListener('change', togglePiField);
+  togglePiField();
+</script>
+{% endblock %}
+ 

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Approval to Register{% endblock %}
+
+{% block content %}
+<div class="page-title">Approval to Register — {{ application.program_title }}</div>
+<div class="card">
+  <div class="card-header"><h2>HR-Verified Figures</h2></div>
+  <div class="card-body">
+    <p>Verified base pay: BWP {{ application.verified_base_pay }}</p>
+    <p>Amount paid by BUP: BWP {{ application.amount_paid_by_bup }}</p>
+    <p>Cost of subjects: BWP {{ application.cost_of_subjects }}</p>
+    {% if application.hr_notes %}<p>HR notes: {{ application.hr_notes }}</p>{% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Checklist &amp; Decision</h2></div>
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+      {% for field in form %}
+        {% if field.name in 'program_relevant,accredited_institution,good_standing_6_months,tuition_cap_balance_ok,supervisor_notified' %}
+        <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+          {{ field }} <label class="form-label" style="text-transform:none;margin:0;">{{ field.label }}</label>
+        </div>
+        {% endif %}
+      {% endfor %}
+
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">Decision</label>
+        {{ form.decision }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Comment</label>
+        {{ form.approver_comment }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Reason (required if declining)</label>
+        {{ form.decline_reason }}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">Submit Decision</button>
+        <a href="{% url 'employee_services:study_bond_detail' application.pk %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

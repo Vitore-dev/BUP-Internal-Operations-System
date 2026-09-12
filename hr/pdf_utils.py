@@ -251,3 +251,219 @@ def generate_confirmation_letter_pdf(letter, hr_profile, request):
     doc.build(story, onFirstPage=draw_footer, onLaterPages=draw_footer)
     buffer.seek(0)
     return buffer
+
+
+
+# SECTION 1 — add to hr/pdf_utils.py
+# ----------------------------------------------------------------
+# Reuses the same NAVY/GOLD styling and footer as
+# generate_confirmation_letter_pdf, already in this file. Add this
+# function alongside it:
+ 
+def generate_study_bond_pdf(sb, request):
+    """
+    sb: a StudyBondRequest instance.
+    Renders the Self Study Bond form, including whatever has been
+    filled in for the OFFICIAL USE section so far — a bond that's
+    still PENDING will show blank/"Pending" approval fields, and one
+    that's REGISTERED but not yet graded will show the registration
+    signature but blank grade fields.
+    """
+    buffer = BytesIO()
+ 
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=20*mm,
+        leftMargin=20*mm,
+        topMargin=10*mm,
+        bottomMargin=40*mm,
+    )
+ 
+    normal = ParagraphStyle('SBNormal', fontName='Times-Roman', fontSize=11, leading=16, textColor=BLACK)
+    label = ParagraphStyle('SBLabel', fontName='Times-Bold', fontSize=10, leading=14, textColor=BLACK)
+    heading = ParagraphStyle('SBHeading', fontName='Times-Bold', fontSize=13, leading=18,
+                              textColor=NAVY, alignment=TA_LEFT)
+    section = ParagraphStyle('SBSection', fontName='Times-Bold', fontSize=10, leading=14, textColor=NAVY)
+    small = ParagraphStyle('SBSmall', fontName='Times-Roman', fontSize=9, leading=12, textColor=GREY)
+ 
+    story = []
+ 
+    logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo.png')
+    if os.path.exists(logo_path):
+        logo = Image(logo_path, width=50*mm, height=25*mm)
+        logo.hAlign = 'LEFT'
+        story.append(logo)
+    story.append(Spacer(1, 3*mm))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=NAVY, spaceAfter=5*mm))
+ 
+    story.append(Paragraph("SELF STUDY BOND", heading))
+    story.append(Spacer(1, 6*mm))
+ 
+    full_name = sb.requested_by.get_full_name() or sb.requested_by.username
+ 
+    story.append(Paragraph("I", normal))
+    story.append(Spacer(1, 1*mm))
+    # Print Name is filled from data we already have. Signature is left as
+    # a blank ruled line — there's no employee signature capture anywhere
+    # in the system yet, so this prints for a wet-ink signature, same as
+    # the original paper form.
+    sig_block = Table(
+        [
+            [Paragraph(f"<u>{full_name}</u>", normal), Paragraph("[Print Name]", small)],
+            [Paragraph("&nbsp;", normal), Paragraph("[Signature]", small)],
+        ],
+        colWidths=[110*mm, 55*mm]
+    )
+    sig_block.setStyle(TableStyle([
+        ('LINEBELOW', (0, 0), (0, 0), 0.6, BLACK),
+        ('LINEBELOW', (0, 1), (0, 1), 0.6, BLACK),
+        ('TOPPADDING', (0, 0), (-1, -1), 8),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('VALIGN', (0, 0), (-1, -1), 'BOTTOM'),
+    ]))
+    story.append(sig_block)
+    story.append(Spacer(1, 4*mm))
+    story.append(Paragraph(
+        "Agree to be bound by the terms contained in the BUP Education Policy.", normal))
+    story.append(Spacer(1, 3*mm))
+    story.append(Paragraph(f"Date: {sb.submitted_at.strftime('%d %B %Y')}", normal))
+    story.append(Spacer(1, 6*mm))
+ 
+    def field_row(rows):
+        t = Table(rows, colWidths=[65*mm, 105*mm])
+        t.setStyle(TableStyle([
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ('LEFTPADDING', (0, 0), (-1, -1), 0),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        return t
+ 
+    receipt_note = "Receipt attached" if sb.payment_receipt else "No receipt attached"
+    story.append(field_row([
+        [Paragraph("Period of study:", label), Paragraph(
+            f"{sb.period_start.strftime('%d %b %Y')} – {sb.period_end.strftime('%d %b %Y')}", normal)],
+        [Paragraph("Title of the program:", label), Paragraph(sb.program_title, normal)],
+        [Paragraph("Institution:", label), Paragraph(sb.institution, normal)],
+        [Paragraph("Total cost of course:", label), Paragraph(f"{sb.total_cost:,.2f}", normal)],
+        [Paragraph("Cost of subjects:", label), Paragraph(f"{sb.subject_costs:,.2f}", normal)],
+        [Paragraph("Amount paid by BUP:", label), Paragraph(f"{sb.amount_paid_by_bup:,.2f}", normal)],
+        [Paragraph("Date of payment:", label), Paragraph(
+            sb.payment_date.strftime('%d %b %Y') if sb.payment_date else "—", normal)],
+        [Paragraph("Payment receipt:", label), Paragraph(receipt_note, normal)],
+    ]))
+    story.append(Spacer(1, 4*mm))
+    story.append(Paragraph(
+        "10% of the employee's base pay or BWP 3000 per fiscal year (or equivalent), whichever is less.",
+        small
+    ))
+    story.append(Spacer(1, 8*mm))
+ 
+    # ── OFFICIAL USE BOX ────────────────────────────────────────
+    story.append(HRFlowable(width="100%", thickness=1, color=GOLD, spaceAfter=3*mm))
+    story.append(Paragraph("OFFICIAL USE", ParagraphStyle(
+        'OfficialUse', fontName='Times-Bold', fontSize=11, alignment=TA_CENTER, textColor=NAVY)))
+    story.append(Spacer(1, 5*mm))
+ 
+    # Stage 1: Approval to Register
+    story.append(Paragraph("Approval to Register", section))
+    story.append(Spacer(1, 2*mm))
+ 
+    if sb.status == 'PENDING':
+        story.append(Paragraph("Status: Pending", normal))
+    elif sb.status == 'DECLINED' and not sb.approved_by:
+        story.append(Paragraph("Status: Not Approved", normal))
+        if sb.decline_reason:
+            story.append(Paragraph(f"Reason: {sb.decline_reason}", normal))
+    else:
+        story.append(Paragraph("Status: Approved", normal))
+        story.append(Paragraph(
+            f"Date: {sb.approved_at.strftime('%d %b %Y') if sb.approved_at else '—'}", normal))
+        story.append(Spacer(1, 3*mm))
+        if sb.approver_signature:
+            sig_path = os.path.join(settings.MEDIA_ROOT, str(sb.approver_signature))
+            if os.path.exists(sig_path):
+                sig_img = Image(sig_path, width=40*mm, height=18*mm)
+                sig_img.hAlign = 'LEFT'
+                story.append(sig_img)
+        story.append(Paragraph(f"<b>{sb.approver_name}</b>", normal))
+        story.append(Paragraph(sb.approver_job_title, normal))
+ 
+    story.append(Spacer(1, 6*mm))
+ 
+    # Stage 2: HR Verification — the final step; only reached once the
+    # Director/PI has already approved.
+    story.append(Paragraph("HR Verification", section))
+    story.append(Spacer(1, 2*mm))
+ 
+    if sb.hr_reviewed_by:
+        story.append(Paragraph(f"Verified base pay: {sb.hr_verified_salary:,.2f}", normal))
+        story.append(Paragraph(f"Confirmed cap amount: {sb.hr_cap_amount:,.2f}", normal))
+        if sb.hr_notes:
+            story.append(Paragraph(f"Notes: {sb.hr_notes}", normal))
+        story.append(Paragraph(
+            f"Reviewed by {sb.hr_reviewed_by.get_full_name()} on "
+            f"{sb.hr_reviewed_at.strftime('%d %b %Y') if sb.hr_reviewed_at else '—'}", normal))
+    elif sb.status == 'PENDING_HR_REVIEW':
+        story.append(Paragraph("Status: Pending", normal))
+    else:
+        story.append(Paragraph("Not yet reached", normal))
+ 
+    story.append(Spacer(1, 6*mm))
+ 
+    # Stage 3: Grade Verification
+    story.append(Paragraph("Grade Verification following Completion of Course", section))
+    story.append(Spacer(1, 2*mm))
+ 
+    if sb.status == 'COMPLETED':
+        story.append(Paragraph(f"Grade received: <b>{sb.grade_received}</b>", normal))
+        story.append(Paragraph(
+            f"Verified: {sb.verified_at.strftime('%d %b %Y') if sb.verified_at else '—'}", normal))
+        story.append(Spacer(1, 3*mm))
+        if sb.verifier_signature:
+            sig_path = os.path.join(settings.MEDIA_ROOT, str(sb.verifier_signature))
+            if os.path.exists(sig_path):
+                sig_img = Image(sig_path, width=40*mm, height=18*mm)
+                sig_img.hAlign = 'LEFT'
+                story.append(sig_img)
+        story.append(Paragraph(f"<b>{sb.verifier_name}</b>", normal))
+        story.append(Paragraph(sb.verifier_job_title, normal))
+    else:
+        story.append(Paragraph("Pending", normal))
+ 
+    # ── FOOTER (same as confirmation letters) ───────────────────
+    def draw_footer(canvas, doc_):
+        canvas.saveState()
+        canvas.setStrokeColor(GOLD)
+        canvas.setLineWidth(1.5)
+        canvas.line(20*mm, 28*mm, A4[0] - 20*mm, 28*mm)
+        footer_left = (
+            "Botswana-UPenn Partnership  Botswana Headquarters\n"
+            "University of Botswana Main Campus\n244G - Room 103\n"
+            "(Postal Address: PO Box AC 157 ACH)\nGaborone\nBotswana\n"
+            "Tel: +267.355.4855\nFax: +267.393.2267"
+        )
+        footer_right = (
+            "Botswana-UPenn Partnership  United States Headquarters\n"
+            "University of Pennsylvania\n240 John Morgan Building, 3620 Hamilton Walk\n"
+            "Philadelphia, PA 19104-6073\nUnited States\n"
+            "Tel: +1 215.898.0848\nFax: +1 215.573.2158\nwebsite: http://www.upenn.edu/botswana/"
+        )
+        canvas.setFont('Times-Roman', 7)
+        canvas.setFillColor(GREY)
+        t1 = canvas.beginText(20*mm, 25*mm)
+        for line in footer_left.split('\n'):
+            t1.textLine(line)
+        canvas.drawText(t1)
+        t2 = canvas.beginText(A4[0]/2, 25*mm)
+        for line in footer_right.split('\n'):
+            t2.textLine(line)
+        canvas.drawText(t2)
+        canvas.restoreState()
+ 
+    doc.build(story, onFirstPage=draw_footer, onLaterPages=draw_footer)
+    buffer.seek(0)
+    return buffer
+ 

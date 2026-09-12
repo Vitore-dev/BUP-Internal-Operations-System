@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Request Confirmation Letter{% endblock %}
+{% block page_icon %}📜{% endblock %}
+{% block page_heading %}Request Confirmation Letter{% endblock %}
+
+{% block content %}
+<div class="page-title">Request a Confirmation Letter</div>
+<div class="page-sub">Fill in your personal details below. HR will add your salary and issue the letter.</div>
+
+<div class="card">
+  <div class="card-header"><h2>Your Details</h2></div>
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Salutation *</label>
+          <select name="salutation" class="form-control" required>
+            {% for value, label in salutation_choices %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">National ID / Staff ID Number</label>
+          <input type="text" name="employee_id_number" class="form-control" placeholder="e.g. 123456789">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Job Title *</label>
+        <input type="text" name="job_title" class="form-control" placeholder="e.g. Research Assistant" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Purpose of Letter</label>
+        <input type="text" name="purpose" class="form-control" placeholder="e.g. Bank confirmation, Visa application, Rental application">
+      </div>
+
+      <h3 style="margin:20px 0 12px;font-size:14px;color:#1B2A6B;">Physical Address</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Plot Number</label>
+          <input type="text" name="plot_number" class="form-control" placeholder="e.g. 1234">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ward</label>
+          <input type="text" name="ward" class="form-control" placeholder="e.g. Tlokweng">
+        </div>
+      </div>
+
+      <h3 style="margin:20px 0 12px;font-size:14px;color:#1B2A6B;">Postal Address</h3>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">PO Box</label>
+          <input type="text" name="po_box" class="form-control" placeholder="e.g. PO Box 1234">
+        </div>
+        <div class="form-group">
+          <label class="form-label">City</label>
+          <input type="text" name="postal_city" class="form-control" value="Gaborone">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:20px;">
+        <button type="submit" class="btn btn-primary">📤 Submit Request to HR</button>
+        <a href="{% url 'hr:my_letter_requests' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

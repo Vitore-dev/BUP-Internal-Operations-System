@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center">
+    <h2>My Study Bond Requests</h2>
+    <a href="{% url 'hr:study_bond_request_create' %}" class="btn btn-primary">New request</a>
+  </div>
+ 
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+ 
+  <table class="table table-striped mt-3">
+    <thead>
+      <tr>
+        <th>Program</th>
+        <th>Institution</th>
+        <th>Department</th>
+        <th>Status</th>
+        <th>Submitted</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sb in requests %}
+      <tr>
+        <td>{{ sb.program_title }}</td>
+        <td>{{ sb.institution }}</td>
+        <td>{{ sb.get_department_type_display }}</td>
+        <td>
+          <span class="badge
+            {% if sb.status == 'COMPLETED' %}bg-success
+            {% elif sb.status == 'DECLINED' %}bg-danger
+            {% elif sb.status == 'REGISTERED' %}bg-info
+            {% elif sb.status == 'PENDING_HR_REVIEW' %}bg-warning
+            {% else %}bg-secondary{% endif %}">
+            {{ sb.get_status_display }}
+          </span>
+        </td>
+        <td>{{ sb.submitted_at|date:"d M Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-muted">No Study Bond requests yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+ 

@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Study Bond Application{% endblock %}
+
+{% block content %}
+<div class="page-title">{{ application.program_title }}</div>
+<div class="page-sub">{{ application.get_application_type_display }} — <span class="badge badge-pending">{{ application.get_status_display }}</span></div>
+
+<div class="card">
+  <div class="card-header">
+    <h2>Details</h2>
+    <a href="{% url 'employee_services:study_bond_pdf_download' application.pk %}" class="btn btn-gold btn-sm">⬇ Download PDF</a>
+  </div>
+  <div class="card-body">
+    <p><b>Employee:</b> {{ application.employee.get_full_name }}</p>
+    <p style="margin-top:8px;"><b>Institution:</b> {{ application.institution }}</p>
+    <p style="margin-top:8px;"><b>Period:</b> {{ application.period_start|date:"d M Y" }} – {{ application.period_end|date:"d M Y" }}</p>
+    <p style="margin-top:8px;"><b>Total Cost:</b> BWP {{ application.total_cost }}</p>
+    {% if application.linked_project %}
+    <p style="margin-top:8px;"><b>Linked Project:</b> {{ application.linked_project.name }}</p>
+    {% endif %}
+    <p style="margin-top:8px;"><b>Approver:</b> {{ application.approver.get_full_name }}</p>
+
+    {% if application.hr_reviewed_by %}
+    <h3 style="margin:16px 0 8px;font-size:14px;color:#1B2A6B;">HR Verification</h3>
+    <p>Verified base pay: BWP {{ application.verified_base_pay|default:"—" }}</p>
+    <p>Cap amount: BWP {{ max_allowed|default:"—" }}</p>
+    <p>Amount paid by BUP: BWP {{ application.amount_paid_by_bup|default:"—" }}</p>
+    {% endif %}
+
+    {% if application.decision_date %}
+    <h3 style="margin:16px 0 8px;font-size:14px;color:#1B2A6B;">Approval to Register</h3>
+    <p>{{ application.approver_comment|default:"—" }}</p>
+    {% if application.status == 'DECLINED' %}<p><b>Reason:</b> {{ application.decline_reason }}</p>{% endif %}
+    {% endif %}
+
+    <h3 style="margin:16px 0 8px;font-size:14px;color:#1B2A6B;">Grade Verification</h3>
+    <p>{{ application.get_grade_status_display }}</p>
+
+    <div style="display:flex;gap:12px;margin-top:20px;">
+      {% if can_verify_grade %}
+      <a href="{% url 'employee_services:study_bond_verify_grade' application.pk %}" class="btn btn-primary btn-sm">Verify Prior Grade</a>
+      {% endif %}
+      {% if application.status == 'PENDING_HR_REVIEW' and request.user.role in 'HR,ADMIN' %}
+      <a href="{% url 'employee_services:study_bond_hr_review' application.pk %}" class="btn btn-primary btn-sm">HR Review</a>
+      {% endif %}
+      {% if application.status == 'PENDING_APPROVAL' and is_approver %}
+      <a href="{% url 'employee_services:study_bond_approver_review' application.pk %}" class="btn btn-primary btn-sm">Review & Decide</a>
+      {% endif %}
+      {% if application.status == 'PENDING_PAYMENT' and request.user.role in 'FINANCE,ADMIN' %}
+      <a href="{% url 'employee_services:study_bond_finance_process' application.pk %}" class="btn btn-primary btn-sm">Process Payment</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Attachments</h2></div>
+  <div class="card-body">
+    {% if application.attachments.all %}
+    <table>
+      <thead><tr><th>Type</th><th></th></tr></thead>
+      <tbody>
+        {% for att in application.attachments.all %}
+        <tr><td>{{ att.get_attachment_type_display }}</td><td><a href="{{ att.file.url }}" class="btn btn-outline btn-sm">View</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No attachments.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

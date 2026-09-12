@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Complete Letter Request{% endblock %}
+{% block page_icon %}📜{% endblock %}
+{% block page_heading %}Complete Letter Request{% endblock %}
+
+{% block content %}
+<div class="page-title">Complete Letter Request</div>
+<div class="page-sub">Review the employee's details and add the salary to generate the letter.</div>
+
+<div class="card">
+  <div class="card-header"><h2>Employee's Submitted Details</h2></div>
+  <div class="card-body">
+    <table class="data-table" style="margin-bottom:0;">
+      <tr><td style="font-weight:600;width:200px;">Employee</td><td>{{ letter_req.requested_by.get_full_name }}</td></tr>
+      <tr><td style="font-weight:600;">Salutation</td><td>{{ letter_req.salutation }}</td></tr>
+      <tr><td style="font-weight:600;">National ID</td><td>{{ letter_req.employee_id_number|default:"Not provided" }}</td></tr>
+      <tr><td style="font-weight:600;">Job Title</td><td>{{ letter_req.job_title }}</td></tr>
+      <tr><td style="font-weight:600;">Purpose</td><td>{{ letter_req.purpose|default:"Not specified" }}</td></tr>
+      <tr><td style="font-weight:600;">Physical Address</td><td>Plot {{ letter_req.plot_number }}, {{ letter_req.ward }} Ward</td></tr>
+      <tr><td style="font-weight:600;">Postal Address</td><td>{{ letter_req.po_box }}, {{ letter_req.postal_city }}</td></tr>
+      <tr><td style="font-weight:600;">Requested On</td><td>{{ letter_req.requested_at|date:"d M Y" }}</td></tr>
+    </table>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>HR Section — Complete the Letter</h2></div>
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label">Annual Salary (BWP)</label>
+        <input type="number" name="annual_salary" class="form-control"
+               step="0.01" placeholder="e.g. 120000.00">
+        <small style="color:#7A82A6;font-size:11px;">Leave blank if salary should not appear on the letter.</small>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">HR Notes (internal only — not shown on letter)</label>
+        <textarea name="hr_notes" class="form-control"
+                  placeholder="Any internal notes about this request..."></textarea>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:20px;">
+        <button type="submit" name="action" value="complete" class="btn btn-primary">
+          ✅ Complete & Generate Letter
+        </button>
+        <button type="submit" name="action" value="decline" class="btn btn-danger">
+          ✗ Decline Request
+        </button>
+        <a href="{% url 'hr:letter_request_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

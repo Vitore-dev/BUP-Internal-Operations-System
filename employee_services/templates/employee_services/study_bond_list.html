@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}My Study Bond Applications{% endblock %}
+
+{% block content %}
+<div class="page-title">My Study Bond Applications</div>
+<div class="card">
+  {% if applications %}
+  <table>
+    <thead><tr><th>Program</th><th>Type</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+    <tbody>
+      {% for app in applications %}
+      <tr>
+        <td>{{ app.program_title }}</td>
+        <td>{{ app.get_application_type_display }}</td>
+        <td><span class="badge badge-pending">{{ app.get_status_display }}</span></td>
+        <td>{{ app.submitted_at|date:"d M Y" }}</td>
+        <td><a href="{% url 'employee_services:study_bond_detail' app.pk %}" class="btn btn-outline btn-sm">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No applications yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

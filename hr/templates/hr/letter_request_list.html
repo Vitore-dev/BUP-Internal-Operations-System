@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Letter Requests{% endblock %}
+{% block page_icon %}📜{% endblock %}
+{% block page_heading %}Confirmation Letter Requests{% endblock %}
+
+{% block content %}
+<div class="page-title">Confirmation Letter Requests</div>
+<div class="page-sub">Review and complete employee letter requests.</div>
+
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header">
+    <h2>Pending Requests</h2>
+    <span class="badge badge-pending">{{ pending.count }} pending</span>
+  </div>
+  {% if pending %}
+  <table>
+    <thead>
+      <tr><th>Employee</th><th>Job Title</th><th>Purpose</th><th>Requested</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for req in pending %}
+      <tr>
+        <td>
+          <div class="name-cell">
+            <div class="avatar">{{ req.requested_by.first_name|first|upper }}{{ req.requested_by.last_name|first|upper }}</div>
+            {{ req.requested_by.get_full_name }}
+          </div>
+        </td>
+        <td>{{ req.job_title }}</td>
+        <td>{{ req.purpose|default:"—" }}</td>
+        <td>{{ req.requested_at|date:"d M Y" }}</td>
+        <td>
+          <a href="{% url 'hr:letter_request_complete' req.pk %}" class="btn btn-primary btn-sm">Complete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No pending letter requests.</div>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Completed Requests</h2></div>
+  {% if completed %}
+  <table>
+    <thead>
+      <tr><th>Employee</th><th>Job Title</th><th>Completed</th><th>By</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for req in completed %}
+      <tr>
+        <td>{{ req.requested_by.get_full_name }}</td>
+        <td>{{ req.job_title }}</td>
+        <td>{{ req.actioned_at|date:"d M Y" }}</td>
+        <td>{{ req.actioned_by.get_full_name|default:"—" }}</td>
+        <td>
+          {% if req.confirmation_letter %}
+          <a href="{% url 'hr:confirmation_letter_download' req.confirmation_letter.pk %}" class="btn btn-gold btn-sm">⬇ Download</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No completed requests yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

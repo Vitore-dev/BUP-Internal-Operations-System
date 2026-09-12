@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}My Letter Requests{% endblock %}
+{% block page_icon %}📜{% endblock %}
+{% block page_heading %}My Confirmation Letters{% endblock %}
+
+{% block content %}
+<div class="page-title">My Confirmation Letters</div>
+<div class="page-sub">Track your letter requests and download completed letters.</div>
+
+<div style="margin-bottom:16px;">
+  <a href="{% url 'hr:letter_request_create' %}" class="btn btn-primary">+ Request New Letter</a>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>My Requests</h2></div>
+  {% if requests %}
+  <table>
+    <thead>
+      <tr>
+        <th>Purpose</th>
+        <th>Job Title</th>
+        <th>Requested</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for req in requests %}
+      <tr>
+        <td>{{ req.purpose|default:"General" }}</td>
+        <td>{{ req.job_title }}</td>
+        <td>{{ req.requested_at|date:"d M Y" }}</td>
+        <td>
+          {% if req.status == 'PENDING' %}
+            <span class="badge badge-pending">Awaiting HR</span>
+          {% elif req.status == 'COMPLETED' %}
+            <span class="badge badge-approved">Ready</span>
+          {% else %}
+            <span class="badge badge-declined">Declined</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if req.status == 'COMPLETED' and req.confirmation_letter %}
+            <a href="{% url 'hr:confirmation_letter_download' req.confirmation_letter.pk %}"
+               class="btn btn-gold btn-sm">⬇ Download</a>
+          {% elif req.status == 'DECLINED' %}
+            <span style="font-size:12px;color:#C62828;">{{ req.hr_notes|default:"Declined by HR" }}</span>
+          {% else %}
+            <span style="font-size:12px;color:#7A82A6;">HR is processing your request</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">You have not requested any confirmation letters yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}New Study Bond Application{% endblock %}
+
+{% block content %}
+<div class="page-title">New Study Bond Application</div>
+<div class="card">
+  <div class="card-header"><h2>Program Details</h2></div>
+  <div class="card-body">
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Period Start *</label>
+          {{ form.period_start }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Period End *</label>
+          {{ form.period_end }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title of the Program *</label>
+        {{ form.program_title }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Institution *</label>
+        {{ form.institution }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total Cost of Course (BWP) *</label>
+        {{ form.total_cost }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">{{ form.linked_project.label }}</label>
+        {{ form.linked_project }}
+        <div class="page-sub">{{ form.linked_project.help_text }}</div>
+      </div>
+
+      <h3 style="margin:20px 0 12px;font-size:14px;color:#1B2A6B;">Attachments</h3>
+      <div class="form-group">
+        <label class="form-label">Admission Letter *</label>
+        {{ attachments_form.admission_letter }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Course Content *</label>
+        {{ attachments_form.course_content }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Course Quotation *</label>
+        {{ attachments_form.quotation }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Accreditation *</label>
+        {{ attachments_form.accreditation }}
+      </div>
+
+      <div class="form-group" style="margin-top:20px;">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;text-transform:none;">
+          {{ form.policy_acknowledged }} {{ form.policy_acknowledged.label }}
+        </label>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">📤 Submit Application</button>
+        <a href="{% url 'employee_services:portal_home' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

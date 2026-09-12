@@ -26,6 +26,11 @@ INSTALLED_APPS = [
     'finance',
     #'reception',
     'dashboard',
+    'director',
+    'employee_services',
+    'research',
+    'global_health',
+    'research_support',
 ]
 
 MIDDLEWARE = [
@@ -104,7 +109,9 @@ AZURE_GROUPS = {
     #'RECEPTION':   config('GROUP_RECEPTION'),
     'DIRECTOR':    config('GROUP_DIRECTOR'),
     #'OPS_MANAGER': config('GROUP_OPS_MANAGER'),
-    'PI':          config('GROUP_PI'),
+    # No 'PI' group — PI/Coordinator is tracked per-study on research.Study,
+    # not as an Azure-group-driven system role. Remove the GROUP_PI env var
+    # once confirmed unused elsewhere.
 }
 
 # Email - Microsoft Graph

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}HR Review{% endblock %}
+
+{% block content %}
+<div class="page-title">HR Review — {{ application.program_title }}</div>
+<div class="page-sub">Verify costs. This must be done before the approver can review.</div>
+<div class="card">
+  <div class="card-body">
+    <p><b>Total Cost:</b> BWP {{ application.total_cost }}</p>
+    <p style="margin-top:4px;">10% of base pay or BWP 3000/fiscal year, whichever is less.</p>
+
+    <form method="POST" style="margin-top:20px;">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Verified Base Pay (BWP)</label>
+        {{ form.verified_base_pay }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Cost of Subjects (limit 3/semester)</label>
+        {{ form.cost_of_subjects }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount Paid by BUP</label>
+        {{ form.amount_paid_by_bup }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        {{ form.hr_notes }}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">Send to Approver</button>
+        <a href="{% url 'employee_services:study_bond_detail' application.pk %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

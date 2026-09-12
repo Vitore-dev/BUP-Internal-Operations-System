@@ -1,19 +1,26 @@
 from django.db import models
-
-# Create your models here.
-
-from django.db import models
 from django.conf import settings
 
 
 class AuditLog(models.Model):
     ACTION_CHOICES = [
+        # Identity
         ('USER_CREATED', 'User Created'),
         ('USER_UPDATED', 'User Updated'),
         ('USER_ARCHIVED', 'User Archived'),
         ('USER_UNARCHIVED', 'User Unarchived'),
         ('USER_LOGIN', 'User Login'),
         ('USER_LOGOUT', 'User Logout'),
+        ('PROFILE_UPDATED', 'Employee Profile Updated'),
+
+        # Study Bond — fresh and continuation applications share these
+        ('STUDY_BOND_SUBMITTED', 'Study Bond Submitted'),
+        ('STUDY_BOND_HR_REVIEWED', 'Study Bond HR Reviewed'),
+        ('STUDY_BOND_APPROVED', 'Study Bond Approved'),
+        ('STUDY_BOND_DECLINED', 'Study Bond Declined'),
+        ('STUDY_BOND_PAID', 'Study Bond Payment Processed'),
+        ('STUDY_BOND_CONTINUATION_SUBMITTED', 'Study Bond Continuation Submitted'),
+        ('STUDY_BOND_GRADE_VERIFIED', 'Study Bond Grade Verified'),
     ]
 
     user = models.ForeignKey(
