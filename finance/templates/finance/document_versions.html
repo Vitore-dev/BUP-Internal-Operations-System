@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Version History{% endblock %}
+
+{% block content %}
+<div class="page-title">{{ document.title }} — Version History</div>
+<div class="card">
+  {% if versions %}
+  <table>
+    <thead><tr><th>Version</th><th>Created By</th><th>Date</th><th></th></tr></thead>
+    <tbody>
+      {% for v in versions %}
+      <tr>
+        <td>v{{ v.version_number }}</td>
+        <td>{{ v.created_by.get_full_name }}</td>
+        <td>{{ v.created_at|date:"d M Y H:i" }}</td>
+        <td style="display:flex;gap:8px;">
+          <a href="{{ v.file.url }}" target="_blank" class="btn btn-outline btn-sm">Download</a>
+          <form method="POST" action="{% url 'finance:document_version_delete' document.pk v.pk %}"
+                onsubmit="return confirm('Delete version {{ v.version_number }} permanently? This cannot be undone.');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No versions yet — add pages in the builder.</div>
+  {% endif %}
+</div>
+<a href="{% url 'finance:document_builder' document.pk %}" class="btn btn-outline">Back to Builder</a>
+{% endblock %}

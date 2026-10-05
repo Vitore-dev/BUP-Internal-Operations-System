@@ -90,6 +90,7 @@ AZURE_AUTH = {
     'SCOPES': [ 'User.Read'],
     'PUBLIC_URLS': [],
     'USERNAME_ATTRIBUTE': 'preferred_username',
+    'PROMPT': 'select_account',
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -99,7 +100,7 @@ AUTHENTICATION_BACKENDS = [
 
 LOGIN_URL = '/accounts/login'
 LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/accounts/login/'
+LOGOUT_REDIRECT_URL = '/accounts/login'
 
 # Azure AD Groups
 AZURE_GROUPS = {

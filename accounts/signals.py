@@ -1,4 +1,4 @@
-from django.contrib.auth.signals import user_logged_in
+from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.dispatch import receiver
 from django.conf import settings
 
@@ -68,4 +68,19 @@ def populate_user_from_azure(sender, request, user, **kwargs):
         action='USER_LOGIN',
         description=f'{user.username} logged in via Azure AD',
         ip_address=get_client_ip(request),
+    )
+
+
+@receiver(user_logged_out)
+def record_logout(sender, request, user, **kwargs):
+    """Audit trail for sign-outs, the counterpart of the login entry written above."""
+    if user is None:
+        return
+    from core.utils import get_client_ip
+    from core.models import AuditLog
+    AuditLog.objects.create(
+        user=user,
+        action='USER_LOGOUT',
+        description=f'{user.username} signed out',
+        ip_address=get_client_ip(request) if request else None,
     )

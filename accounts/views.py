@@ -22,7 +22,8 @@ def access_denied(request):
         message = f"Access Denied: {reason}"
     else:
         message = "Access Denied: Your account does not have a role assigned. Please contact IT Admin."
-    return HttpResponse(message, status=403)
+    # Plain text on purpose: the reason comes from the URL, so it must never be rendered as HTML.
+    return HttpResponse(message, status=403, content_type='text/plain; charset=utf-8')
 
 
 def _handle_profile_forms(request, user, redirect_name):

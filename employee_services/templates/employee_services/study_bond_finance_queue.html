@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Study Bond — Finance Queue{% endblock %}
+
+{% block content %}
+<div class="page-title">Study Bond — Finance Queue</div>
+
+<div class="card">
+  <div class="card-header"><h2>Needs Action</h2></div>
+  <div class="card-body">
+    {% if pending %}
+    <table>
+      <thead><tr><th>Employee</th><th>Program</th><th>Amount Approved</th><th>Approved On</th><th></th></tr></thead>
+      <tbody>
+        {% for app in pending %}
+        <tr>
+          <td>{{ app.employee.get_full_name }}</td>
+          <td>{{ app.program_title }}</td>
+          <td>BWP {{ app.amount_paid_by_bup }}</td>
+          <td>{{ app.decision_date|date:"d M Y" }}</td>
+          <td><a href="{% url 'employee_services:study_bond_finance_process' app.pk %}" class="btn btn-primary btn-sm">Pay</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">Nothing awaiting payment right now.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Completed</h2></div>
+  <div class="card-body">
+    {% if completed %}
+    <table>
+      <thead><tr><th>Employee</th><th>Program</th><th>Amount Paid</th><th>Processed By</th><th>Date</th><th></th></tr></thead>
+      <tbody>
+        {% for app in completed %}
+        <tr>
+          <td>{{ app.employee.get_full_name }}</td>
+          <td>{{ app.program_title }}</td>
+          <td>BWP {{ app.amount_paid_by_bup }}</td>
+          <td>{{ app.finance_processed_by.get_full_name }}</td>
+          <td>{{ app.finance_processed_at|date:"d M Y" }}</td>
+          <td><a href="{% url 'employee_services:study_bond_detail' app.pk %}" class="btn btn-outline btn-sm">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No payments processed yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

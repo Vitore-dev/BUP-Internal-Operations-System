@@ -27,7 +27,9 @@ urlpatterns = [
     path('accounts/', include('accounts.urls', namespace='accounts')),
     path('hr/', include('hr.urls', namespace='hr')),
     path('', include('core.urls')),
+    path('finance/', include('finance.urls', namespace='finance')),
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
+    path('director/', include('director.dashboard_urls', namespace='director')),
     path('employee-services/', include('employee_services.urls', namespace='employee_services')),
     
 ]

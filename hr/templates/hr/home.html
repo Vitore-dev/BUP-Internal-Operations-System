@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}HR Home{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap">
+<style>
+  .fh-shell { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; font-family: 'Source Sans 3', 'Segoe UI', system-ui, sans-serif; color: #1E2440; }
+
+  /* sidebar */
+  .fh-side { flex: 0 0 264px; max-width: 100%; box-sizing: border-box; background: #16215A; border-radius: 14px; overflow: hidden; }
+  .fh-logo { background: #fff; padding: 20px 24px; border-bottom: 3px solid #C9A84C; }
+  .fh-logo img { width: 100%; max-width: 200px; height: auto; display: block; margin: 0 auto; }
+  .fh-nav { padding: 20px 14px 24px; display: flex; flex-direction: column; gap: 6px; }
+  .fh-nav-label { font-size: 12px; letter-spacing: .1em; font-weight: 700; color: #E2C46D; padding: 0 14px 8px; }
+  .fh-nav-label.second { padding-top: 18px; }
+  .fh-link { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 10px; font-size: 15px; font-weight: 600; text-decoration: none; box-sizing: border-box; color: #C9D0EE; }
+  .fh-link:hover { background: #1F2D70; color: #fff; }
+  .fh-link.active { background: #26337A; color: #fff; }
+  .fh-link .ico { display: flex; color: #C9D0EE; }
+  .fh-link.active .ico { color: #E2C46D; }
+  .fh-link svg { width: 20px; height: 20px; }
+  .fh-link .grow { flex: 1; }
+  .fh-pill { min-width: 24px; height: 24px; border-radius: 12px; background: #C9A84C; color: #1B2A6B; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: center; padding: 0 6px; box-sizing: border-box; }
+
+  /* main column */
+  .fh-main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 28px; }
+  .fh-main h1 { margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 34px; font-weight: 600; color: #1B2A6B; line-height: 1.15; }
+  .fh-sub { margin: 6px 0 0; font-size: 16px; color: #5A6385; }
+
+  .fh-notice { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; background: #FFF6DD; border: 1px solid #E8CF84; border-radius: 10px; padding: 6px 18px; color: #5E3E00; }
+  .fh-notice svg { width: 20px; height: 20px; flex: none; }
+  .fh-notice span { flex: 1 1 240px; min-width: 0; font-size: 15px; }
+  .fh-notice a { display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; color: #5E3E00; text-decoration: underline; }
+
+  .fh-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; font-size: 15px; font-weight: 600; text-decoration: none; box-sizing: border-box; white-space: nowrap; font-family: inherit; cursor: pointer; }
+  .fh-btn svg { width: 18px; height: 18px; }
+  .fh-btn.primary { background: #1B2A6B; color: #fff; border: 1px solid #1B2A6B; }
+  .fh-btn.gold { background: #C9A84C; color: #1B2A6B; border: 1px solid #C9A84C; }
+  .fh-btn.outline { background: #fff; color: #1B2A6B; border: 1px solid #B9C1DE; }
+  .fh-btn.light { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.5); }
+  .fh-textlink { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 15px; font-weight: 600; color: #1B2A6B; text-decoration: none; }
+  .fh-textlink svg { width: 16px; height: 16px; }
+
+  /* hero */
+  .fh-hero { background: #1B2A6B; border-radius: 14px; padding: 28px 30px; display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; }
+  .fh-hero .body { flex: 1 1 320px; min-width: 0; }
+  .fh-eyebrow { font-size: 12px; letter-spacing: .1em; font-weight: 700; color: #E2C46D; }
+  .fh-hero .headline { font-family: 'Source Serif 4', Georgia, serif; font-size: 30px; font-weight: 600; color: #fff; line-height: 1.2; margin-top: 8px; }
+  .fh-hero .detail { font-size: 15px; color: #C9D0EE; margin-top: 8px; }
+  .fh-hero .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  /* cards */
+  .fh-card { background: #fff; border: 1px solid #DDE2F0; border-radius: 12px; box-shadow: 0 1px 2px rgba(27,42,107,.06); min-width: 0; }
+  .fh-card-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding: 16px 22px; border-bottom: 1px solid #EEF0F8; }
+  .fh-card-head h2 { margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 20px; font-weight: 600; color: #1B2A6B; }
+  .fh-card-body { padding: 20px 22px; }
+  .fh-empty { padding: 22px; font-size: 15px; color: #5A6385; }
+
+  /* pipeline */
+  .fh-stages { display: flex; flex-wrap: wrap; gap: 14px; }
+  .fh-stage { flex: 1 1 150px; min-width: 0; box-sizing: border-box; background: #fff; border: 1px solid #DDE2F0; border-radius: 12px; padding: 16px 18px; }
+  .fh-stage.mine { border: 2px solid #C9A84C; }
+  .fh-stage .tag { font-size: 12px; font-weight: 700; color: #7A5C12; letter-spacing: .05em; min-height: 15px; }
+  .fh-stage .num { font-family: 'Source Serif 4', Georgia, serif; font-size: 38px; font-weight: 600; color: #1B2A6B; line-height: 1.1; }
+  .fh-stage .label { font-size: 14px; color: #5A6385; margin-top: 2px; }
+
+  /* tables */
+  .fh-table-wrap { overflow-x: auto; }
+  .fh-table { width: 100%; border-collapse: collapse; min-width: 480px; }
+  .fh-table th { text-align: left; padding: 12px 22px; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: #5A6385; background: #F7F8FD; border-bottom: 1px solid #DDE2F0; font-weight: 600; }
+  .fh-table td { padding: 14px 22px; border-bottom: 1px solid #EEF0F8; font-size: 15px; vertical-align: middle; }
+
+  /* documents */
+  .fh-two { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+  .fh-two > div { flex: 1 1 380px; min-width: 0; }
+  .fh-doc-tools { padding: 18px 22px; display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid #EEF0F8; }
+  .fh-search { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fh-search input { flex: 1 1 180px; min-width: 0; min-height: 44px; box-sizing: border-box; padding: 0 14px; border: 1px solid #B9C1DE; border-radius: 10px; font-size: 15px; font-family: inherit; color: #1E2440; background: #fff; }
+  .fh-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .fh-doc { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 14px 22px; border-bottom: 1px solid #EEF0F8; }
+  .fh-doc .icon { width: 44px; height: 44px; border-radius: 10px; background: #E9EDFA; color: #1B2A6B; display: flex; align-items: center; justify-content: center; }
+  .fh-doc .icon svg { width: 22px; height: 22px; }
+  .fh-doc .text { flex: 1 1 140px; min-width: 0; }
+  .fh-doc .title { font-size: 16px; font-weight: 600; }
+  .fh-doc .meta { font-size: 13px; color: #5A6385; margin-top: 2px; }
+  .fh-doc .buttons { display: flex; gap: 8px; }
+
+  .fh-chip { display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 999px; font-size: 13px; font-weight: 600; background: #DDF1EE; color: #0A5C52; white-space: nowrap; }
+
+  /* status chips (the finance page only needed the teal one) */
+  .fh-chip.amber { background: #FFF1CC; color: #7A4F00; }
+  .fh-chip.navy { background: #E4E8F7; color: #1B2A6B; }
+  .fh-chip.red { background: #FBE4E4; color: #8A1F1F; }
+
+  /* "More HR work" tiles (same look as the shared My services row) */
+  .ms-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin-bottom: 14px; }
+  .ms-head h2 { margin: 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 24px; font-weight: 600; color: #1B2A6B; }
+  .ms-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+  .ms-tile { flex: 1 1 230px; min-width: 0; box-sizing: border-box; background: #fff; border: 1px solid #DDE2F0; border-radius: 12px; box-shadow: 0 1px 2px rgba(27,42,107,.06); padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .ms-icon { width: 40px; height: 40px; border-radius: 10px; background: #E9EDFA; color: #1B2A6B; display: flex; align-items: center; justify-content: center; }
+  .ms-icon svg { width: 20px; height: 20px; }
+  .ms-tile h3 { margin: 6px 0 0; font-family: 'Source Serif 4', Georgia, serif; font-size: 19px; font-weight: 600; color: #1B2A6B; line-height: 1.25; }
+  .ms-tile p { margin: 0; font-size: 14px; line-height: 1.5; color: #5A6385; }
+  .ms-action { margin-top: auto; padding-top: 8px; }
+  .ms-link { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 15px; font-weight: 600; color: #1B2A6B; text-decoration: none; }
+  .ms-link svg { width: 16px; height: 16px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fh-shell">
+
+  <aside class="fh-side">
+    <div class="fh-logo"><img src="{% static 'finance/bup_logo.png' %}" alt="Botswana-UPenn Partnership"></div>
+    <nav class="fh-nav" aria-label="HR sections">
+      <div class="fh-nav-label">HR</div>
+      <a class="fh-link active" href="{% url 'hr:home' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+        <span class="grow">Home</span>
+      </a>
+      <a class="fh-link" href="{% url 'employee_services:study_bond_hr_queue' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>
+        <span class="grow">Study Bond reviews</span>{% if waiting_count %}<span class="fh-pill">{{ waiting_count }}</span>{% endif %}
+      </a>
+      <a class="fh-link" href="{% url 'hr:letter_request_list' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        <span class="grow">Letter requests</span>{% if letters_waiting %}<span class="fh-pill">{{ letters_waiting }}</span>{% endif %}
+      </a>
+      <a class="fh-link" href="{% url 'hr:employee_directory' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        <span class="grow">Employee directory</span>
+      </a>
+      <a class="fh-link" href="{% url 'hr:hr_form_list' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></span>
+        <span class="grow">HR forms</span>
+      </a>
+      <a class="fh-link" href="{% url 'hr:activity_list' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+        <span class="grow">Activities</span>
+      </a>
+      <a class="fh-link" href="{% url 'hr:user_request_list' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+        <span class="grow">IT user requests</span>
+      </a>
+      <div class="fh-nav-label second">MY SERVICES</div>
+      <a class="fh-link" href="{% url 'employee_services:study_bond_list' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+        <span class="grow">Study Bond</span>
+      </a>
+      <a class="fh-link" href="{% url 'hr:my_letter_requests' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+        <span class="grow">My letter requests</span>
+      </a>
+      <a class="fh-link" href="{% url 'accounts:profile' %}">
+        <span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+        <span class="grow">My profile</span>
+      </a>
+    </nav>
+    {% include 'employee_services/_sidebar_footer.html' %}
+  </aside>
+
+  <div class="fh-main">
+    <div>
+      <h1>Home</h1>
+      <p class="fh-sub">HR · Botswana-UPenn Partnership</p>
+    </div>
+
+    {% if profile_incomplete %}
+    <div class="fh-notice">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span>Your profile is incomplete. Add your name and signature.</span>
+      <a href="{% url 'accounts:profile' %}">Complete profile</a>
+    </div>
+    {% endif %}
+
+    {% if next_waiting %}
+    <section class="fh-hero">
+      <div class="body">
+        <div class="fh-eyebrow">NEEDS YOUR ATTENTION</div>
+        <div class="headline">{{ waiting_count }} Study Bond application{{ waiting_count|pluralize }} {{ waiting_count|pluralize:"is,are" }} waiting for HR review</div>
+        <div class="detail">
+          Oldest: {{ next_waiting.employee.get_full_name|default:next_waiting.employee.username }} · {{ next_waiting.program_title }}
+          · BWP {{ next_waiting.total_cost }} total cost · submitted {{ next_waiting.submitted_at|date:"d M Y" }}
+          {% if next_waiting.is_continuation %}· continuation{% endif %}
+        </div>
+        {% if letters_waiting %}<div class="detail">Also waiting: {{ letters_waiting }} letter request{{ letters_waiting|pluralize }}.</div>{% endif %}
+      </div>
+      <div class="actions">
+        <a class="fh-btn gold" href="{% url 'employee_services:study_bond_hr_review' next_waiting.pk %}">Start review <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        <a class="fh-btn light" href="{% url 'employee_services:study_bond_hr_queue' %}">Open queue</a>
+      </div>
+    </section>
+    {% elif next_letter %}
+    <section class="fh-hero">
+      <div class="body">
+        <div class="fh-eyebrow">NEEDS YOUR ATTENTION</div>
+        <div class="headline">{{ letters_waiting }} confirmation letter request{{ letters_waiting|pluralize }} {{ letters_waiting|pluralize:"is,are" }} waiting</div>
+        <div class="detail">
+          Oldest: {{ next_letter.requested_by.get_full_name|default:next_letter.requested_by.username }}
+          · requested {{ next_letter.requested_at|date:"d M Y" }}
+        </div>
+      </div>
+      <div class="actions">
+        <a class="fh-btn gold" href="{% url 'hr:letter_request_complete' next_letter.pk %}">Respond <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+        <a class="fh-btn light" href="{% url 'hr:letter_request_list' %}">Open requests</a>
+      </div>
+    </section>
+    {% else %}
+    <section class="fh-hero">
+      <div class="body">
+        <div class="fh-eyebrow">ALL CAUGHT UP</div>
+        <div class="headline">Nothing is waiting on HR</div>
+        <div class="detail">New Study Bond applications and letter requests will appear here.</div>
+      </div>
+      <div class="actions">
+        <a class="fh-btn light" href="{% url 'employee_services:study_bond_hr_queue' %}">Open Study Bond queue</a>
+      </div>
+    </section>
+    {% endif %}
+
+    <section class="fh-card">
+      <div class="fh-card-head"><h2>Study Bond pipeline</h2></div>
+      <div class="fh-card-body">
+        <div class="fh-stages">
+          <div class="fh-stage mine"><div class="tag">YOUR STAGE</div><div class="num">{{ stage_counts.hr_review }}</div><div class="label">HR review</div></div>
+          <div class="fh-stage"><div class="tag"></div><div class="num">{{ stage_counts.approval }}</div><div class="label">Approval</div></div>
+          <div class="fh-stage"><div class="tag"></div><div class="num">{{ stage_counts.payment }}</div><div class="label">Payment</div></div>
+          <div class="fh-stage"><div class="tag"></div><div class="num">{{ stage_counts.completed }}</div><div class="label">Completed</div></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="fh-two">
+      <div>
+        <section class="fh-card">
+          <div class="fh-card-head">
+            <h2>Recently reviewed</h2>
+            <a class="fh-textlink" href="{% url 'employee_services:study_bond_hr_queue' %}">See history <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+          </div>
+          {% if recently_reviewed %}
+          <div class="fh-table-wrap">
+            <table class="fh-table">
+              <thead><tr><th scope="col">Employee</th><th scope="col">Program</th><th scope="col">Reviewed</th><th scope="col">Status</th></tr></thead>
+              <tbody>
+                {% for app in recently_reviewed %}
+                <tr>
+                  <td>{{ app.employee.get_full_name|default:app.employee.username }}</td>
+                  <td>{{ app.program_title }}</td>
+                  <td>{{ app.hr_reviewed_at|date:"d M Y" }}</td>
+                  <td><span class="fh-chip {% if app.status == 'COMPLETED' %}teal{% elif app.status == 'DECLINED' %}red{% elif app.status == 'PENDING_PAYMENT' %}amber{% else %}navy{% endif %}">{{ app.get_status_display }}</span></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="fh-empty">Nothing reviewed yet.</div>
+          {% endif %}
+        </section>
+      </div>
+
+      <div>
+        <section class="fh-card">
+          <div class="fh-card-head">
+            <h2>Employee directory</h2>
+            <a class="fh-textlink" href="{% url 'hr:employee_directory' %}">Open directory <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a>
+          </div>
+          <div class="fh-card-body">
+            <p class="fh-sub" style="margin:0 0 14px;font-size:15px;">Look up anyone by name or email.</p>
+            <form class="fh-search" method="GET" action="{% url 'hr:employee_directory' %}">
+              <label class="fh-visually-hidden" for="hr-emp-search">Search employees</label>
+              <input id="hr-emp-search" type="text" name="search" placeholder="Find an employee…">
+              <button class="fh-btn outline" type="submit"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>Search</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <section>
+      <div class="ms-head"><h2>More HR work</h2></div>
+      <div class="ms-grid">
+        <div class="ms-tile">
+          <div class="ms-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+          <h3>Letter requests</h3>
+          <p>Respond to confirmation letter requests and see letters already issued.</p>{% if letters_waiting %}<p><span class="fh-chip amber">{{ letters_waiting }} waiting</span></p>{% endif %}
+          <div class="ms-action"><a class="ms-link" href="{% url 'hr:letter_request_list' %}">Open letter requests <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a></div>
+        </div>
+        <div class="ms-tile">
+          <div class="ms-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
+          <h3>HR forms</h3>
+          <p>Upload and manage the forms staff can download.</p>
+          <div class="ms-action"><a class="ms-link" href="{% url 'hr:hr_form_list' %}">Manage forms <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a></div>
+        </div>
+        <div class="ms-tile">
+          <div class="ms-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <h3>Activities</h3>
+          <p>Propose extracurricular activities for Director approval.</p>
+          <div class="ms-action"><a class="ms-link" href="{% url 'hr:activity_list' %}">View activities <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a></div>
+        </div>
+        <div class="ms-tile">
+          <div class="ms-icon"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+          <h3>IT user requests</h3>
+          <p>Ask IT to add or remove a user account.</p>
+          <div class="ms-action"><a class="ms-link" href="{% url 'hr:user_request_list' %}">View requests <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></a></div>
+        </div>
+      </div>
+    </section>
+
+    {% include 'employee_services/_my_services.html' with services_note="Available to every BUP employee, HR included." %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}Finance Documents{% endblock %}
+ 
+{% block content %}
+<div class="page-title">Finance — Documents</div>
+ 
+<div class="card">
+  <div class="card-header">
+    <h2>All Documents</h2>
+    <a href="{% url 'finance:document_create' %}" class="btn btn-primary btn-sm">+ New Document</a>
+  </div>
+  <div class="card-body">
+    <form method="GET" style="margin-bottom:16px;display:flex;gap:8px;">
+      <input type="text" name="q" value="{{ query }}" placeholder="Search by title…" class="form-control" style="max-width:300px;">
+      <button type="submit" class="btn btn-outline btn-sm">Search</button>
+      {% if query %}<a href="{% url 'finance:document_list' %}" class="btn btn-outline btn-sm">Clear</a>{% endif %}
+    </form>
+ 
+    {% if documents %}
+    <table>
+      <thead><tr><th>Title</th><th>Created</th><th></th></tr></thead>
+      <tbody>
+        {% for doc in documents %}
+        <tr>
+          <td>{{ doc.title }}</td>
+          <td>{{ doc.created_at|date:"d M Y" }}</td>
+          <td>
+            <a href="{% url 'finance:document_builder' doc.pk %}" class="btn btn-primary btn-sm">Edit</a>
+            <a href="{% url 'finance:document_versions' doc.pk %}" class="btn btn-outline btn-sm">Versions</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% elif query %}
+    <div class="empty">No documents match "{{ query }}".</div>
+    {% else %}
+    <div class="empty">No documents yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+ 

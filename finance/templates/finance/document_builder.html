@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% block title %}Building {{ document.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .builder-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 16px; }
+  .thumb-panel { background: #fff; border-radius: 8px; padding: 16px; min-height: 200px; }
+  .thumb-grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; min-height: 120px; }
+  .thumb-grid.empty-hint { align-items: center; justify-content: center; color: #999; font-size: 13px; border: 1px dashed #ddd; border-radius: 6px; }
+  .thumb { position: relative; width: 100px; border: 1px solid #ddd; border-radius: 6px; padding: 6px; cursor: grab; background: #fafafa; text-align: center; }
+  .thumb img { width: 100%; display: block; border-radius: 3px; }
+  .thumb .thumb-label { font-size: 10px; color: #666; margin-top: 4px; display: block; }
+  .thumb .remove-btn { position: absolute; top: -8px; right: -8px; background: #b02a2a; color: #fff; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 12px; line-height: 1; }
+  .thumb.dragging { opacity: 0.4; }
+  #save-status { margin-top: 10px; font-size: 13px; color: #666; }
+  #save-status.error { color: #b02a2a; }
+  #save-status.unsaved { color: #b08900; font-weight: 600; }
+  .upload-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+  .panel-actions { display: flex; gap: 8px; align-items: center; }
+  #save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-title">Building: {{ document.title }}</div>
+<div class="page-sub">
+  Drag pages from the left into the right panel to build the document. Drag within the right panel to reorder.
+  Nothing is saved until you click <b>Save</b>.
+  <span id="current-version-label">{% if latest_version %}Currently at <b>v{{ latest_version.version_number }}</b>.{% endif %}</span>
+</div>
+
+<div class="builder-grid">
+  <div class="thumb-panel">
+    <h3>Available Pages</h3>
+    <form method="POST" action="{% url 'finance:document_upload_source' document.pk %}" enctype="multipart/form-data" class="upload-row">
+      {% csrf_token %}
+      {{ upload_form.file }}
+      {{ upload_form.label }}
+      <button type="submit" class="btn btn-outline btn-sm">Upload</button>
+    </form>
+    <div id="available-pages" class="thumb-grid{% if not source_files %} empty-hint{% endif %}">
+      {% for sf in source_files %}
+        {% for p in sf.pages.all %}
+        <div class="thumb" draggable="true" data-page-id="{{ p.id }}">
+          <img src="{{ p.thumbnail.url }}" alt="page {{ p.page_number|add:1 }}">
+          <span class="thumb-label">{{ sf.label|default:sf.file.name|truncatechars:14 }} p{{ p.page_number|add:1 }}</span>
+        </div>
+        {% endfor %}
+      {% empty %}
+        <span>Upload a PDF above to get started.</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="thumb-panel">
+    <h3 style="display:flex;justify-content:space-between;align-items:center;">
+      Document Pages (<span id="page-count">{{ composition|length }}</span>)
+      <span class="panel-actions">
+        <button type="button" id="clear-all-btn" class="btn btn-outline btn-sm" style="font-weight:normal;">Clear All</button>
+        <button type="button" id="save-btn" class="btn btn-primary btn-sm" style="font-weight:normal;" disabled>Save</button>
+      </span>
+    </h3>
+    <div id="composition" class="thumb-grid{% if not composition %} empty-hint{% endif %}">
+      {% for dp in composition %}
+      <div class="thumb" draggable="true" data-page-id="{{ dp.source_page.id }}">
+        <img src="{{ dp.source_page.thumbnail.url }}" alt="page">
+        <button class="remove-btn" title="Remove">×</button>
+        <span class="thumb-label">{{ dp.source_page.source_file.label|default:dp.source_page.source_file.file.name|truncatechars:14 }} p{{ dp.source_page.page_number|add:1 }}</span>
+      </div>
+      {% empty %}
+        <span>Drag pages here to build the document.</span>
+      {% endfor %}
+    </div>
+    <div id="save-status"></div>
+  </div>
+</div>
+
+<div style="margin-top:20px;display:flex;gap:12px;">
+  <a href="{% url 'finance:document_versions' document.pk %}" class="btn btn-outline">View Version History</a>
+  <a href="{% url 'finance:document_list' %}" class="btn btn-outline">Back to Documents</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  const composition = document.getElementById('composition');
+  const available = document.getElementById('available-pages');
+  const status = document.getElementById('save-status');
+  const pageCountEl = document.getElementById('page-count');
+  const versionLabelEl = document.getElementById('current-version-label');
+  const saveBtn = document.getElementById('save-btn');
+  const clearAllBtn = document.getElementById('clear-all-btn');
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  let dragged = null;
+  let ghost = null;
+  let hasUnsavedChanges = false;
+
+  function markUnsaved() {
+    hasUnsavedChanges = true;
+    saveBtn.disabled = false;
+    status.classList.remove('error');
+    status.classList.add('unsaved');
+    status.textContent = 'Unsaved changes — click Save to create a new version.';
+  }
+
+  function markSaved(versionNumber) {
+    hasUnsavedChanges = false;
+    saveBtn.disabled = true;
+    status.classList.remove('unsaved', 'error');
+    if (versionNumber) {
+      status.textContent = `Saved as version ${versionNumber}`;
+      versionLabelEl.innerHTML = `Currently at <b>v${versionNumber}</b>.`;
+    } else {
+      status.textContent = 'Saved — composition is empty, nothing to merge yet.';
+    }
+  }
+
+  function updatePageCount() {
+    pageCountEl.textContent = composition.querySelectorAll('.thumb').length;
+  }
+
+  function addRemoveHandler(thumb) {
+    const btn = thumb.querySelector('.remove-btn');
+    if (btn && !btn.dataset.bound) {
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', () => {
+        thumb.remove();
+        toggleEmptyHint(composition);
+        updatePageCount();
+        markUnsaved();
+      });
+    }
+  }
+
+  function makeDraggable(thumb) {
+    thumb.addEventListener('dragstart', e => {
+      dragged = thumb;
+      ghost = null;
+      thumb.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', thumb.dataset.pageId || '');
+    });
+    thumb.addEventListener('dragend', () => {
+      if (dragged) dragged.classList.remove('dragging');
+      dragged = null;
+      ghost = null;
+    });
+    addRemoveHandler(thumb);
+  }
+
+  function toggleEmptyHint(container) {
+    const hasThumbs = container.querySelectorAll('.thumb').length > 0;
+    container.classList.toggle('empty-hint', !hasThumbs);
+  }
+
+  function getDragAfterElement(container, y) {
+    const els = [...container.querySelectorAll('.thumb:not(.dragging)')];
+    return els.reduce((closest, child) => {
+      if (child === ghost) return closest;
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset, element: child };
+      }
+      return closest;
+    }, { offset: -Infinity, element: null }).element;
+  }
+
+  [composition, available].forEach(container => {
+    container.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!dragged) return;
+
+      let moving;
+      if (container === composition && dragged.parentElement === available) {
+        if (!ghost) {
+          ghost = dragged.cloneNode(true);
+          ghost.classList.remove('dragging');
+          if (!ghost.querySelector('.remove-btn')) {
+            const btn = document.createElement('button');
+            btn.className = 'remove-btn';
+            btn.title = 'Remove';
+            btn.textContent = '×';
+            ghost.appendChild(btn);
+          }
+          addRemoveHandler(ghost);
+          ghost.setAttribute('draggable', 'true');
+          ghost.addEventListener('dragstart', ev => {
+            dragged = ghost;
+            ghost = null;
+            ev.dataTransfer.setData('text/plain', dragged.dataset.pageId || '');
+          });
+        }
+        moving = ghost;
+      } else {
+        moving = dragged;
+      }
+
+      const after = getDragAfterElement(container, e.clientY);
+      if (after) container.insertBefore(moving, after);
+      else container.appendChild(moving);
+
+      toggleEmptyHint(composition);
+      toggleEmptyHint(available);
+    });
+
+    container.addEventListener('drop', e => {
+      e.preventDefault();
+      if (container === composition) {
+        updatePageCount();
+        markUnsaved();
+      }
+    });
+  });
+
+  clearAllBtn.addEventListener('click', () => {
+    if (composition.querySelectorAll('.thumb').length === 0) return;
+    if (!confirm('Remove all pages from this document? Click Save afterwards to make it permanent.')) return;
+    composition.innerHTML = '';
+    toggleEmptyHint(composition);
+    updatePageCount();
+    markUnsaved();
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const pageIds = [...composition.querySelectorAll('.thumb')].map(el => el.dataset.pageId);
+    status.classList.remove('error', 'unsaved');
+    status.textContent = 'Saving…';
+    saveBtn.disabled = true;
+
+    fetch("{% url 'finance:document_save_composition' document.pk %}", {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+      body: JSON.stringify({ page_ids: pageIds }),
+    })
+      .then(async r => {
+        const data = await r.json().catch(() => null);
+        if (!r.ok || !data || data.error) {
+          const msg = (data && data.error) ? data.error : `Save failed (HTTP ${r.status}).`;
+          status.classList.add('error');
+          status.textContent = msg;
+          saveBtn.disabled = false; // let them retry
+          console.error('Composition save failed:', msg);
+          return;
+        }
+        markSaved(data.version_number);
+      })
+      .catch(err => {
+        status.classList.add('error');
+        status.textContent = 'Save failed — check your connection and try again.';
+        saveBtn.disabled = false;
+        console.error('Composition save failed:', err);
+      });
+  });
+
+  window.addEventListener('beforeunload', e => {
+    if (hasUnsavedChanges) {
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+
+  document.querySelectorAll('.thumb').forEach(makeDraggable);
+})();
+</script>
+{% endblock %}

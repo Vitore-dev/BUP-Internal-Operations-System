@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.utils import timezone
 from django.db.models import Q
+from accounts.decorators import role_required
 
 from core.utils import log_action
 from core.notifications import notify
@@ -337,3 +338,64 @@ def study_bond_pdf_download(request, pk):
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
+@login_required
+@role_required('HR', 'ADMIN')
+def study_bond_hr_queue(request):
+    """
+    HR's work queue. Pending: waiting on HR right now. Completed: HR has
+    already reviewed it (regardless of what's happened downstream since —
+    approved, declined, paid — this is HR's own history, not the
+    application's current status).
+    """
+    pending = StudyBondApplication.objects.filter(
+        status=StudyBondApplication.Status.PENDING_HR_REVIEW
+    ).select_related('employee')
+    completed = StudyBondApplication.objects.filter(
+        hr_reviewed_by__isnull=False
+    ).select_related('employee').order_by('-hr_reviewed_at')
+    return render(request, 'employee_services/study_bond_hr_queue.html', {
+        'pending': pending,
+        'completed': completed,
+    })
+ 
+ 
+@login_required
+def study_bond_approver_queue(request):
+    """
+    An approver's own queue — filtered to THEM specifically, both halves.
+    Pending: awaiting their decision. Completed: they've already decided
+    (approved or declined), most recent first.
+    """
+    pending = StudyBondApplication.objects.filter(
+        approver=request.user,
+        status=StudyBondApplication.Status.PENDING_APPROVAL,
+    ).select_related('employee')
+    completed = StudyBondApplication.objects.filter(
+        approver=request.user,
+        decision_date__isnull=False,
+    ).select_related('employee').order_by('-decision_date')
+    return render(request, 'employee_services/study_bond_approver_queue.html', {
+        'pending': pending,
+        'completed': completed,
+    })
+ 
+ 
+@login_required
+@role_required('FINANCE', 'ADMIN')
+def study_bond_finance_queue(request):
+    """
+    Finance's work queue. Pending: approved and waiting for payment.
+    Completed: Finance has already processed it, regardless of who
+    processed it — this is a shared departmental history.
+    """
+    pending = StudyBondApplication.objects.filter(
+        status=StudyBondApplication.Status.PENDING_PAYMENT
+    ).select_related('employee')
+    completed = StudyBondApplication.objects.filter(
+        finance_processed_by__isnull=False
+    ).select_related('employee').order_by('-finance_processed_at')
+    return render(request, 'employee_services/study_bond_finance_queue.html', {
+        'pending': pending,
+        'completed': completed,
+    })
+ 

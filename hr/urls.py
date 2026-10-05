@@ -1,9 +1,13 @@
 from django.urls import path
 from . import views
+from .dashboard import hr_home
 
 app_name = 'hr'
 
 urlpatterns = [
+    #hr home
+    path('', hr_home, name='home'),
+    
     # Employee Directory
     path('directory/', views.employee_directory, name='employee_directory'),
 

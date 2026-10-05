@@ -11,10 +11,10 @@ def home_redirect(request):
 
     role_url_map = {
         'ADMIN': '/dashboard/admin/',
-        'HR': '/dashboard/hr/',
-        'FINANCE': '/dashboard/finance/',
+        'HR': '/hr/',
+        'FINANCE': '/finance/',
         #'RECEPTION': '/dashboard/reception/',
-        'DIRECTOR': '/dashboard/director/',
+        'DIRECTOR': '/director/',
         #'OPS_MANAGER': '/dashboard/ops/',
         'PI': '/dashboard/pi/',
     }

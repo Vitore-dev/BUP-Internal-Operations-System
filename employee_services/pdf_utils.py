@@ -1,12 +1,13 @@
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle, HRFlowable
 from reportlab.lib.colors import HexColor
 from io import BytesIO
 import os
 from django.conf import settings
+
+from .signature_utils import get_signature_image
 
 # Same identity as hr/pdf_utils.py — one visual language across every
 # generated BUP document.
@@ -34,12 +35,11 @@ def generate_study_bond_pdf(application):
     normal = ParagraphStyle('N', fontName='Times-Roman', fontSize=11, leading=16, textColor=BLACK)
     bold = ParagraphStyle('B', fontName='Times-Bold', fontSize=11, leading=16, textColor=BLACK)
     small = ParagraphStyle('S', fontName='Times-Roman', fontSize=9, leading=13, textColor=BLACK)
-    section_heading = ParagraphStyle('SH', fontName='Times-Bold', fontSize=11, leading=16, textColor=NAVY, alignment=TA_CENTER)
+    section_heading = ParagraphStyle('SH', fontName='Times-Bold', fontSize=11, leading=16, textColor=NAVY, alignment=1)
     label = ParagraphStyle('L', fontName='Times-Bold', fontSize=10, leading=14, textColor=BLACK)
 
     story = []
 
-    # ── LOGO (same path/fallback as hr/pdf_utils.py) ────────────────
     logo_path = os.path.join(settings.BASE_DIR, 'static', 'images', 'logo.png')
     if os.path.exists(logo_path):
         logo = Image(logo_path, width=50 * mm, height=25 * mm)
@@ -51,7 +51,6 @@ def generate_study_bond_pdf(application):
     story.append(Spacer(1, 3 * mm))
     story.append(HRFlowable(width="100%", thickness=1.5, color=NAVY, spaceAfter=5 * mm))
 
-    # ── TITLE + application type ─────────────────────────────────────
     type_label = "CONTINUATION" if application.is_continuation() else "FRESH APPLICATION"
     story.append(Paragraph(f"SELF STUDY BOND — {type_label}", ParagraphStyle(
         'Title', fontName='Times-Bold', fontSize=13, leading=18, textColor=NAVY,
@@ -68,9 +67,9 @@ def generate_study_bond_pdf(application):
     full_name = application.employee.get_full_name() or application.employee.username
     story.append(Paragraph(f"I, {full_name}", normal))
 
-    profile = getattr(application.employee, 'employee_profile', None)
-    if profile and profile.signature_image:
-        sig_path = os.path.join(settings.MEDIA_ROOT, str(profile.signature_image))
+    employee_signature = get_signature_image(application.employee)
+    if employee_signature:
+        sig_path = os.path.join(settings.MEDIA_ROOT, str(employee_signature))
         if os.path.exists(sig_path):
             sig = Image(sig_path, width=40 * mm, height=16 * mm)
             sig.hAlign = 'LEFT'
@@ -86,7 +85,6 @@ def generate_study_bond_pdf(application):
     story.append(Paragraph(f"Date: {application.submitted_at.strftime('%d %B %Y')}", normal))
     story.append(Spacer(1, 5 * mm))
 
-    # ── PROGRAM DETAILS TABLE ─────────────────────────────────────────
     program_rows = [
         ["Period of study:", f"{application.period_start.strftime('%d %b %Y')} – {application.period_end.strftime('%d %b %Y')}"],
         ["Title of the program:", application.program_title],
@@ -115,11 +113,9 @@ def generate_study_bond_pdf(application):
     story.append(Spacer(1, 5 * mm))
     story.append(HRFlowable(width="100%", thickness=1, color=GOLD, spaceAfter=4 * mm))
 
-    # ── OFFICIAL USE ───────────────────────────────────────────────────
     story.append(Paragraph("OFFICIAL USE", section_heading))
     story.append(Spacer(1, 4 * mm))
 
-    # HR verification (costs only — the checklist below belongs to the approver)
     story.append(Paragraph("HR Verification", label))
     story.append(Paragraph(f"Verified base pay: {_dash_if_blank(application.verified_base_pay, lambda v: f'BWP {v:,.2f}')}", normal))
     cap = application.max_allowed_bup_amount()
@@ -136,7 +132,6 @@ def generate_study_bond_pdf(application):
         story.append(Paragraph("Pending HR review.", small))
     story.append(Spacer(1, 5 * mm))
 
-    # Approval to Register (approver's full checklist + decision)
     story.append(Paragraph("Approval to Register for Course", label))
     checklist = [
         ("Program relevant to BUP's work / employee's development plan", application.program_relevant),
@@ -161,19 +156,19 @@ def generate_study_bond_pdf(application):
         story.append(Paragraph(f"Reason: {application.decline_reason}", normal))
     story.append(Paragraph(f"Name of Approver: {application.approver.get_full_name() if application.approver else '—'}", normal))
 
-    approver_profile = getattr(application.approver, 'employee_profile', None) if application.approver else None
-    if approver_profile and approver_profile.signature_image and application.decision_date:
-        sig_path = os.path.join(settings.MEDIA_ROOT, str(approver_profile.signature_image))
-        if os.path.exists(sig_path):
-            sig = Image(sig_path, width=40 * mm, height=16 * mm)
-            sig.hAlign = 'LEFT'
-            story.append(sig)
+    if application.approver and application.decision_date:
+        approver_signature = get_signature_image(application.approver)
+        if approver_signature:
+            sig_path = os.path.join(settings.MEDIA_ROOT, str(approver_signature))
+            if os.path.exists(sig_path):
+                sig = Image(sig_path, width=40 * mm, height=16 * mm)
+                sig.hAlign = 'LEFT'
+                story.append(sig)
     story.append(Paragraph("Approver Signature", small))
     if application.decision_date:
         story.append(Paragraph(f"Date: {application.decision_date.strftime('%d %b %Y')}", small))
     story.append(Spacer(1, 5 * mm))
 
-    # Grade Verification (HR's job; exists on every application)
     story.append(Paragraph("Grade Verification following Completion of Course", label))
     story.append(Paragraph(application.get_grade_status_display(), normal))
     if application.grade_status != 'PENDING' and application.grade_verified_by:
@@ -185,7 +180,6 @@ def generate_study_bond_pdf(application):
     if application.grade_notes:
         story.append(Paragraph(f"Notes: {application.grade_notes}", small))
 
-    # ── FOOTER (identical to hr/pdf_utils.py) ─────────────────────────
     def draw_footer(canvas, doc):
         canvas.saveState()
         canvas.setStrokeColor(GOLD)

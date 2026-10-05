@@ -1,0 +1,21 @@
+{# Sidebar footer for the home pages: who is signed in, plus a Sign out button. #}
+<style>
+  .fh-side-foot { padding: 16px 18px 20px; border-top: 1px solid rgba(255,255,255,.14); }
+  .fh-who .name { font-size: 15px; font-weight: 600; color: #fff; word-break: break-word; }
+  .fh-who .role { font-size: 13px; color: #C9D0EE; margin-top: 2px; }
+  .fh-signout { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; margin-top: 12px; padding: 0 16px; box-sizing: border-box; border: 1px solid rgba(255,255,255,.45); border-radius: 10px; color: #fff; font-size: 15px; font-weight: 600; text-decoration: none; }
+  .fh-signout:hover { background: rgba(255,255,255,.1); color: #fff; }
+  .fh-signout svg { width: 18px; height: 18px; flex: none; }
+</style>
+{% url 'azure_auth:logout' as azure_logout %}
+{% url 'logout' as plain_logout %}
+<div class="fh-side-foot">
+  <div class="fh-who">
+    <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+    {% if request.user.role %}<div class="role">{{ request.user.get_role_display }}</div>{% endif %}
+  </div>
+  <a class="fh-signout" href="{% if azure_logout %}{{ azure_logout }}{% elif plain_logout %}{{ plain_logout }}{% else %}/accounts/logout{% endif %}">
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign out
+  </a>
+</div>

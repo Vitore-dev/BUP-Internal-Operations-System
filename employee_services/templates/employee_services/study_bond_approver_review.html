@@ -3,6 +3,45 @@
 
 {% block content %}
 <div class="page-title">Approval to Register — {{ application.program_title }}</div>
+
+<div class="card">
+  <div class="card-header"><h2>Application Details</h2></div>
+  <div class="card-body">
+    <p><b>Employee:</b> {{ application.employee.get_full_name }}</p>
+    <p style="margin-top:8px;"><b>Application Type:</b> {{ application.get_application_type_display }}</p>
+    {% if application.is_continuation and application.previous_application %}
+    <p style="margin-top:8px;"><b>Continuation of:</b> Application #{{ application.previous_application.pk }} ({{ application.previous_application.program_title }})</p>
+    {% endif %}
+    <p style="margin-top:8px;"><b>Institution:</b> {{ application.institution }}</p>
+    <p style="margin-top:8px;"><b>Period:</b> {{ application.period_start|date:"d M Y" }} – {{ application.period_end|date:"d M Y" }}</p>
+    <p style="margin-top:8px;"><b>Total Cost:</b> BWP {{ application.total_cost }}</p>
+    {% if application.linked_project %}
+    <p style="margin-top:8px;"><b>Linked Project:</b> {{ application.linked_project.name }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Attachments</h2></div>
+  <div class="card-body">
+    {% if application.attachments.all %}
+    <table>
+      <thead><tr><th>Type</th><th></th></tr></thead>
+      <tbody>
+        {% for att in application.attachments.all %}
+        <tr>
+          <td>{{ att.get_attachment_type_display }}</td>
+          <td><a href="{{ att.file.url }}" target="_blank" class="btn btn-outline btn-sm">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No attachments were submitted with this application.</div>
+    {% endif %}
+  </div>
+</div>
+
 <div class="card">
   <div class="card-header"><h2>HR-Verified Figures</h2></div>
   <div class="card-body">
@@ -40,7 +79,7 @@
       </div>
       <div style="display:flex;gap:12px;margin-top:16px;">
         <button type="submit" class="btn btn-primary">Submit Decision</button>
-        <a href="{% url 'employee_services:study_bond_detail' application.pk %}" class="btn btn-outline">Cancel</a>
+        <a href="{% url 'employee_services:study_bond_approver_queue' %}" class="btn btn-outline">Back to Queue</a>
       </div>
     </form>
   </div>

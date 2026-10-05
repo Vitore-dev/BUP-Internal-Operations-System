@@ -19,4 +19,7 @@ urlpatterns = [
     path('study-bond/<int:pk>/approve/', views.study_bond_approver_review, name='study_bond_approver_review'),
     path('study-bond/<int:pk>/finance/', views.study_bond_finance_process, name='study_bond_finance_process'),
     path('study-bond/<int:pk>/pdf/', views.study_bond_pdf_download, name='study_bond_pdf_download'),
+    path('study-bond/hr-queue/', views.study_bond_hr_queue, name='study_bond_hr_queue'),
+    path('study-bond/approver-queue/', views.study_bond_approver_queue, name='study_bond_approver_queue'),
+    path('study-bond/finance-queue/', views.study_bond_finance_queue, name='study_bond_finance_queue'),
 ]
