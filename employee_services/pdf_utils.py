@@ -149,6 +149,10 @@ def generate_study_bond_pdf(application):
         decision_text = "Approved"
     elif application.status == 'DECLINED':
         decision_text = "Not Approved"
+    elif application.status == 'WITHDRAWN':
+        decision_text = "Withdrawn by the employee"
+    elif application.status == 'RETURNED':
+        decision_text = "Returned to the employee for changes"
     else:
         decision_text = "Pending"
     story.append(Paragraph(f"<b>Status:</b> {decision_text}", normal))
@@ -156,17 +160,31 @@ def generate_study_bond_pdf(application):
         story.append(Paragraph(f"Reason: {application.decline_reason}", normal))
     story.append(Paragraph(f"Name of Approver: {application.approver.get_full_name() if application.approver else '—'}", normal))
 
-    if application.approver and application.decision_date:
-        approver_signature = get_signature_image(application.approver)
-        if approver_signature:
-            sig_path = os.path.join(settings.MEDIA_ROOT, str(approver_signature))
-            if os.path.exists(sig_path):
-                sig = Image(sig_path, width=40 * mm, height=16 * mm)
-                sig.hAlign = 'LEFT'
-                story.append(sig)
-    story.append(Paragraph("Approver Signature", small))
-    if application.decision_date:
-        story.append(Paragraph(f"Date: {application.decision_date.strftime('%d %b %Y')}", small))
+    if application.approved_by_link and application.decision_date:
+        # Approved through the emailed one-time link: there is no signature image, so the record says so.
+        decided = application.decision_date
+        try:
+            from django.utils import timezone as _tz
+            decided = _tz.localtime(decided)
+        except Exception:
+            pass
+        approver_name = application.approver.get_full_name() if application.approver else '—'
+        story.append(Paragraph(
+            f"<b>Approved electronically by {approver_name} on {decided.strftime('%d %B %Y at %H:%M')}.</b>",
+            normal,
+        ))
+    else:
+        if application.approver and application.decision_date:
+            approver_signature = get_signature_image(application.approver)
+            if approver_signature:
+                sig_path = os.path.join(settings.MEDIA_ROOT, str(approver_signature))
+                if os.path.exists(sig_path):
+                    sig = Image(sig_path, width=40 * mm, height=16 * mm)
+                    sig.hAlign = 'LEFT'
+                    story.append(sig)
+        story.append(Paragraph("Approver Signature", small))
+        if application.decision_date:
+            story.append(Paragraph(f"Date: {application.decision_date.strftime('%d %b %Y')}", small))
     story.append(Spacer(1, 5 * mm))
 
     story.append(Paragraph("Grade Verification following Completion of Course", label))

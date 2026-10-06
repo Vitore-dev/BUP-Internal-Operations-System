@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Edit and Resubmit{% endblock %}
+
+{% block content %}
+<div class="page-title">Edit and resubmit — {{ application.program_title }}</div>
+
+{% if latest_return %}
+<div class="card" style="border-left:4px solid #C9A84C;">
+  <div class="card-header"><h2>What HR asked for</h2></div>
+  <div class="card-body">
+    <p style="white-space:pre-line;">{{ latest_return.reason }}</p>
+    <p class="page-sub" style="margin-top:8px;">Sent back on {{ latest_return.returned_at|date:"d M Y" }}.</p>
+  </div>
+</div>
+{% endif %}
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% if form.errors or attachments_form.errors %}
+  <div class="page-sub" style="color:#b02a2a;margin-bottom:12px;">Please fix the problems marked below and try again.</div>
+  {% endif %}
+
+  {% if form %}
+  <div class="card">
+    <div class="card-header"><h2>Program Details</h2></div>
+    <div class="card-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Period Start *</label>
+          {{ form.period_start }}{{ form.period_start.errors }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Period End *</label>
+          {{ form.period_end }}{{ form.period_end.errors }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title of the Program *</label>
+        {{ form.program_title }}{{ form.program_title.errors }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Institution *</label>
+        {{ form.institution }}{{ form.institution.errors }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Total Cost of Course (BWP) *</label>
+        {{ form.total_cost }}{{ form.total_cost.errors }}
+      </div>
+      {% if form.linked_project %}
+      <div class="form-group">
+        <label class="form-label">{{ form.linked_project.label }}</label>
+        {{ form.linked_project }}{{ form.linked_project.errors }}
+        <div class="page-sub">{{ form.linked_project.help_text }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% else %}
+  <div class="card">
+    <div class="card-body">
+      <p class="page-sub">This is a continuation, so the program details come from your first application. You can replace the documents below.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="card-header"><h2>Documents</h2></div>
+    <div class="card-body">
+      <p class="page-sub" style="margin-bottom:12px;">Upload only the documents that need replacing. Anything you leave empty stays as it is.</p>
+      {% if application.current_attachments %}
+      <p style="margin-bottom:12px;"><b>On file now:</b>
+        {% for att in application.current_attachments %}{{ att.get_attachment_type_display }}{% if not forloop.last %}, {% endif %}{% endfor %}
+      </p>
+      {% endif %}
+      {% for field in attachments_form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}{{ field.errors }}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;margin-top:8px;flex-wrap:wrap;">
+    <button type="submit" class="btn btn-primary">Send back to HR</button>
+    <a href="{% url 'employee_services:study_bond_detail' application.pk %}" class="btn btn-outline">Cancel</a>
+    <a href="{% url 'employee_services:study_bond_withdraw' application.pk %}" class="btn btn-outline">Withdraw instead</a>
+  </div>
+</form>
+{% endblock %}

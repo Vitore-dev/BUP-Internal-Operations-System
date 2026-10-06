@@ -1,0 +1,48 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Study Bond{% endblock %} · Botswana-UPenn Partnership</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #F4F6FB; color: #1E2440; font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif; font-size: 16px; line-height: 1.5; }
+    .top { background: #fff; border-bottom: 3px solid #C9A84C; padding: 12px 20px; }
+    .top img { height: 46px; width: auto; display: block; }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+    h1 { font-family: Georgia, 'Times New Roman', serif; font-size: 26px; line-height: 1.25; color: #1B2A6B; margin: 8px 0 6px; }
+    h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 19px; color: #1B2A6B; margin: 0 0 12px; }
+    .lead { color: #5A6385; margin: 0 0 18px; }
+    .card { background: #fff; border: 1px solid #DDE2F0; border-radius: 12px; padding: 18px; margin: 0 0 16px; }
+    dl { margin: 0; }
+    dt { font-size: 13px; color: #5A6385; margin-top: 10px; }
+    dt:first-child { margin-top: 0; }
+    dd { margin: 2px 0 0; font-size: 16px; }
+    .notice { background: #FFF6DD; border: 1px solid #E8CF84; border-radius: 10px; padding: 12px 14px; margin: 0 0 16px; color: #5E3E00; }
+    .error { color: #8A1F1F; font-size: 14px; margin-top: 4px; }
+    ul.files { list-style: none; margin: 0; padding: 0; }
+    ul.files li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 0; border-top: 1px solid #EEF0F8; }
+    ul.files li:first-child { border-top: 0; }
+    label { display: block; font-weight: 600; margin: 14px 0 4px; }
+    select, textarea { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid #B9C1DE; border-radius: 8px; background: #fff; color: #1E2440; min-height: 44px; }
+    textarea { min-height: 88px; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 10px; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; border: 2px solid #1B2A6B; }
+    .btn-primary { background: #1B2A6B; color: #fff; }
+    .btn-outline { background: #fff; color: #1B2A6B; }
+    .btn-danger { background: #fff; color: #8A1F1F; border-color: #8A1F1F; }
+    .btn-small { min-height: 44px; padding: 0 16px; font-size: 15px; }
+    .btn:focus, select:focus, textarea:focus { outline: 3px solid #C9A84C; outline-offset: 2px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+    .actions .btn { flex: 1 1 180px; }
+    .foot { text-align: center; color: #5A6385; font-size: 13px; padding: 8px 16px 32px; }
+  </style>
+</head>
+<body>
+  <div class="top"><img src="{% static 'finance/bup_logo.png' %}" alt="Botswana-UPenn Partnership"></div>
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+  <div class="foot">Botswana-UPenn Partnership</div>
+</body>
+</html>

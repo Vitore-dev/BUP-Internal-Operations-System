@@ -31,6 +31,8 @@ class StudyBondApplication(models.Model):
         DECLINED = 'DECLINED', 'Declined'
         PENDING_PAYMENT = 'PENDING_PAYMENT', 'Pending Payment'
         COMPLETED = 'COMPLETED', 'Completed'
+        RETURNED = 'RETURNED', 'Returned for Changes'
+        WITHDRAWN = 'WITHDRAWN', 'Withdrawn'
 
     class GradeStatus(models.TextChoices):
         PENDING = 'PENDING', 'Pending'
@@ -144,6 +146,18 @@ class StudyBondApplication(models.Model):
     grade_verified_at = models.DateTimeField(null=True, blank=True)
     grade_notes = models.TextField(blank=True)
 
+    # ── Return / withdraw / resubmit / approval by link ────────────
+    round_number = models.PositiveIntegerField(
+        default=1,
+        help_text="1 = first submission. Goes up each time HR returns it and the employee resubmits.",
+    )
+    approved_by_link = models.BooleanField(
+        default=False,
+        help_text="True when the approver decided through the emailed one-time link instead of signing in.",
+    )
+    withdrawn_at = models.DateTimeField(null=True, blank=True)
+    withdrawn_reason = models.TextField(blank=True)
+
     class Meta:
         ordering = ['-submitted_at']
         verbose_name = "Study Bond Application"
@@ -166,6 +180,31 @@ class StudyBondApplication(models.Model):
     def is_continuation(self):
         return self.application_type == self.ApplicationType.CONTINUATION
 
+    @property
+    def current_attachments(self):
+        """What reviewers and approvers see: the newest file of each type. Replaced files stay on record."""
+        return self.attachments.filter(superseded_at__isnull=True)
+
+    @property
+    def superseded_attachments(self):
+        return self.attachments.filter(superseded_at__isnull=False)
+
+    @property
+    def can_edit(self):
+        return self.status == self.Status.RETURNED
+
+    @property
+    def can_withdraw(self):
+        """Until it is approved. Once Finance has it, money may already be moving."""
+        return self.status in (
+            self.Status.SUBMITTED, self.Status.PENDING_HR_REVIEW,
+            self.Status.RETURNED, self.Status.PENDING_APPROVAL,
+        )
+
+    @property
+    def latest_return(self):
+        return self.returns.order_by('-returned_at').first()
+
 
 class StudyBondAttachment(models.Model):
     class AttachmentType(models.TextChoices):
@@ -184,9 +223,59 @@ class StudyBondAttachment(models.Model):
     attachment_type = models.CharField(max_length=30, choices=AttachmentType.choices)
     file = models.FileField(upload_to='study_bond_attachments/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    superseded_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Set when the employee uploads a newer file of the same type. The old file is kept, not deleted.",
+    )
 
     class Meta:
         ordering = ['attachment_type']
 
     def __str__(self):
         return f"{self.get_attachment_type_display()} – {self.application}"
+
+
+class StudyBondReturn(models.Model):
+    """
+    One round of "HR sent it back". Kept so HR can see, on the review screen,
+    what was wrong the last time and when the employee fixed it.
+    """
+    application = models.ForeignKey(StudyBondApplication, on_delete=models.CASCADE, related_name='returns')
+    returned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='study_bond_returns_made',
+    )
+    returned_at = models.DateTimeField(default=timezone.now)
+    reason = models.TextField(help_text="HR's note to the employee. It is emailed to them as written.")
+    resubmitted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['returned_at']
+
+    def __str__(self):
+        return f"Return #{self.pk} of application {self.application_id}"
+
+
+class ApprovalToken(models.Model):
+    """
+    A one-time approval link for an approver who does not sign in (a PI).
+
+    Only a hash of the link's secret is stored, never the secret itself, so
+    nobody reading the database can reconstruct a working link. A link works
+    once, expires, and dies if it is resent, revoked, or the application moves on.
+    """
+    application = models.ForeignKey(StudyBondApplication, on_delete=models.CASCADE, related_name='approval_tokens')
+    approver = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='approval_tokens')
+    token_hash = models.CharField(max_length=64, unique=True)
+    sent_to = models.CharField(max_length=254, help_text="The address the link was emailed to.")
+    created_at = models.DateTimeField(default=timezone.now)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_ip = models.GenericIPAddressField(null=True, blank=True)
+    revoked_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Approval link #{self.pk} for application {self.application_id}"

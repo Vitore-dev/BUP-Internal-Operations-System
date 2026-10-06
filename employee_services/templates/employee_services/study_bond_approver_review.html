@@ -24,11 +24,11 @@
 <div class="card">
   <div class="card-header"><h2>Attachments</h2></div>
   <div class="card-body">
-    {% if application.attachments.all %}
+    {% if application.current_attachments %}
     <table>
       <thead><tr><th>Type</th><th></th></tr></thead>
       <tbody>
-        {% for att in application.attachments.all %}
+        {% for att in application.current_attachments %}
         <tr>
           <td>{{ att.get_attachment_type_display }}</td>
           <td><a href="{{ att.file.url }}" target="_blank" class="btn btn-outline btn-sm">View</a></td>

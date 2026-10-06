@@ -118,6 +118,13 @@ AZURE_GROUPS = {
 # Email - Microsoft Graph
 GRAPH_SENDER_EMAIL = config('GRAPH_SENDER_EMAIL', default='')
 
+# Email through Microsoft Graph
+EMAIL_ENABLED = config('EMAIL_ENABLED', default=False, cast=bool)         # off unless switched on in .env
+EMAIL_REDIRECT_TO = config('EMAIL_REDIRECT_TO', default='')               # test mode: send EVERYTHING here instead
+SITE_BASE_URL = config('SITE_BASE_URL', default='http://localhost:8000')   # used to build links inside emails
+APPROVAL_LINK_DAYS = config('APPROVAL_LINK_DAYS', default=7, cast=int)     # how long a PI's approval link works
+
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

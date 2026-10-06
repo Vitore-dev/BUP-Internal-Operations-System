@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Waiting on Others{% endblock %}
+
+{% block content %}
+<div class="page-title">Study Bond — Waiting on others</div>
+<div class="page-sub">Applications that are with someone else. The longest-waiting come first.</div>
+
+<div class="card">
+  <div class="card-header"><h2>Waiting on a PI's decision</h2></div>
+  <div class="card-body">
+    {% if on_pi %}
+    <table>
+      <thead><tr><th>Employee</th><th>Program</th><th>PI</th><th>Link sent to</th><th>Waiting</th><th>Link</th><th></th></tr></thead>
+      <tbody>
+        {% for row in on_pi %}
+        <tr>
+          <td>{{ row.application.employee.get_full_name }}</td>
+          <td>{{ row.application.program_title }}</td>
+          <td>{{ row.profile.display_name }}</td>
+          <td>{{ row.token.sent_to|default:row.profile.approval_email }}</td>
+          <td>{{ row.days }} day{{ row.days|pluralize }}</td>
+          <td>
+            {% if row.link_alive %}
+              <span class="badge badge-approved">Active until {{ row.token.expires_at|date:"d M" }}</span>
+            {% else %}
+              <span class="badge badge-declined">Expired or replaced</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="POST" action="{% url 'employee_services:study_bond_resend_link' row.application.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline btn-sm">Resend link</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p class="page-sub" style="margin-top:10px;">Resending makes a new link and cancels the old one.</p>
+    {% else %}
+    <div class="empty">No application is waiting on a PI's link.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Waiting on the employee to make changes</h2></div>
+  <div class="card-body">
+    {% if returned %}
+    <table>
+      <thead><tr><th>Employee</th><th>Program</th><th>Round</th><th>Sent back</th><th>Waiting</th><th>What you asked for</th><th></th></tr></thead>
+      <tbody>
+        {% for row in returned %}
+        <tr>
+          <td>{{ row.application.employee.get_full_name }}</td>
+          <td>{{ row.application.program_title }}</td>
+          <td>{{ row.application.round_number }}</td>
+          <td>{{ row.ret.returned_at|date:"d M Y" }}</td>
+          <td>{{ row.days }} day{{ row.days|pluralize }}</td>
+          <td>{{ row.ret.reason|truncatechars:80 }}</td>
+          <td><a href="{% url 'employee_services:study_bond_detail' row.application.pk %}" class="btn btn-outline btn-sm">View</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">Nothing is waiting on an employee.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

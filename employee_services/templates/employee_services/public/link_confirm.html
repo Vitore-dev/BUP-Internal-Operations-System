@@ -1,0 +1,33 @@
+{% extends 'employee_services/public/_public_base.html' %}
+{% block title %}Confirm your decision{% endblock %}
+
+{% block content %}
+<h1>Please confirm your decision</h1>
+<p class="lead">Nothing has been recorded yet. Check the summary below, then confirm.</p>
+
+<div class="card">
+  <h2>
+    {% if decision == 'APPROVED' %}You are about to approve{% else %}You are about to decline{% endif %}
+  </h2>
+  <dl>
+    <dt>Employee</dt><dd>{{ application.employee.get_full_name }}</dd>
+    <dt>Programme</dt><dd>{{ application.program_title }}, {{ application.institution }}</dd>
+    {% for label, answer in checklist %}
+    <dt>{{ label }}</dt><dd>{{ answer }}</dd>
+    {% endfor %}
+    {% if form.cleaned_data.approver_comment %}<dt>Your comment</dt><dd style="white-space:pre-line;">{{ form.cleaned_data.approver_comment }}</dd>{% endif %}
+    {% if decision == 'DECLINED' %}<dt>Reason for declining</dt><dd style="white-space:pre-line;">{{ form.cleaned_data.decline_reason }}</dd>{% endif %}
+  </dl>
+</div>
+
+<form method="POST" class="card">
+  {% csrf_token %}
+  {% for name, value in posted %}<input type="hidden" name="{{ name }}" value="{{ value }}">{% endfor %}
+  <div class="actions" style="margin-top:0;">
+    <button type="submit" name="action" value="confirm" class="btn {% if decision == 'APPROVED' %}btn-primary{% else %}btn-danger{% endif %}">
+      Yes, {% if decision == 'APPROVED' %}approve{% else %}decline{% endif %} this application
+    </button>
+    <button type="submit" name="action" value="edit" class="btn btn-outline">Go back and change</button>
+  </div>
+</form>
+{% endblock %}

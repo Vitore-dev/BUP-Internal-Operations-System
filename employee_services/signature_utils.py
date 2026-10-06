@@ -10,7 +10,7 @@ def get_signature_image(user):
     related_name never crashes PDF generation — it just falls through
     to the next candidate, or returns None if nobody has one on file.
     """
-    for related_name in ('director_profile', 'hr_profile', 'employee_profile'):
+    for related_name in ('director_profile', 'hr_profile', 'finance_profile', 'employee_profile'):
         profile = getattr(user, related_name, None)
         signature = getattr(profile, 'signature_image', None) if profile else None
         if signature:

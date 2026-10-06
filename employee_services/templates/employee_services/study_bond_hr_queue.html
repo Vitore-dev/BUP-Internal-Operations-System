@@ -2,7 +2,10 @@
 {% block title %}HR Review Queue{% endblock %}
 
 {% block content %}
-<div class="page-title">Study Bond — HR Review Queue</div>
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+  <div class="page-title" style="margin:0;">Study Bond — HR Review Queue</div>
+  <a href="{% url 'employee_services:study_bond_waiting' %}" class="btn btn-outline btn-sm">Waiting on others</a>
+</div>
 
 <div class="card">
   <div class="card-header"><h2>Needs Action</h2></div>
@@ -14,7 +17,7 @@
         {% for app in pending %}
         <tr>
           <td>{{ app.employee.get_full_name }}</td>
-          <td>{{ app.program_title }}{% if app.is_continuation %} <span class="badge badge-hr">Continuation</span>{% endif %}</td>
+          <td>{{ app.program_title }}{% if app.is_continuation %} <span class="badge badge-hr">Continuation</span>{% endif %}{% if app.round_number > 1 %} <span class="badge badge-hr">Round {{ app.round_number }}</span>{% endif %}</td>
           <td>BWP {{ app.total_cost }}</td>
           <td>{{ app.submitted_at|date:"d M Y" }}</td>
           <td><a href="{% url 'employee_services:study_bond_hr_review' app.pk %}" class="btn btn-primary btn-sm">Review</a></td>

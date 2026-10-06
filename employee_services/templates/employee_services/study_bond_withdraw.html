@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Withdraw Application{% endblock %}
+
+{% block content %}
+<div class="page-title">Withdraw — {{ application.program_title }}</div>
+<div class="page-sub">Withdrawing ends this application. It cannot be undone, but you can always start a new application.</div>
+
+<div class="card">
+  <div class="card-body">
+    <p><b>Status now:</b> {{ application.get_status_display }}</p>
+    {% if application.status == 'PENDING_APPROVAL' %}
+    <p class="page-sub" style="margin-top:8px;">It is currently waiting for the approver's decision. They will be told you withdrew it, and any approval link they were sent will stop working.</p>
+    {% endif %}
+    <form method="POST" style="margin-top:16px;">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">{{ form.reason.label }}</label>
+        {{ form.reason }}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-danger">Yes, withdraw this application</button>
+        <a href="{% url 'employee_services:study_bond_detail' application.pk %}" class="btn btn-outline">Keep it</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

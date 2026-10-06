@@ -8,56 +8,64 @@
   <div class="card-body">
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
+      {% if form.errors or attachments_form.errors %}
+      <div class="page-sub" style="color:#b02a2a;margin-bottom:12px;">Please fix the problems marked below and try again.</div>
+      {% endif %}
       <div class="form-row">
         <div class="form-group">
           <label class="form-label">Period Start *</label>
-          {{ form.period_start }}
+          {{ form.period_start }}{{ form.period_start.errors }}
         </div>
         <div class="form-group">
           <label class="form-label">Period End *</label>
-          {{ form.period_end }}
+          {{ form.period_end }}{{ form.period_end.errors }}
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">Title of the Program *</label>
-        {{ form.program_title }}
+        {{ form.program_title }}{{ form.program_title.errors }}
       </div>
       <div class="form-group">
         <label class="form-label">Institution *</label>
-        {{ form.institution }}
+        {{ form.institution }}{{ form.institution.errors }}
       </div>
       <div class="form-group">
         <label class="form-label">Total Cost of Course (BWP) *</label>
-        {{ form.total_cost }}
+        {{ form.total_cost }}{{ form.total_cost.errors }}
       </div>
+      {% if form.linked_project %}
       <div class="form-group">
         <label class="form-label">{{ form.linked_project.label }}</label>
-        {{ form.linked_project }}
+        {{ form.linked_project }}{{ form.linked_project.errors }}
         <div class="page-sub">{{ form.linked_project.help_text }}</div>
       </div>
+      {% else %}
+      <p class="page-sub">You are not on a research study, so this application will go to the Director.</p>
+      {% endif %}
 
       <h3 style="margin:20px 0 12px;font-size:14px;color:#1B2A6B;">Attachments</h3>
       <div class="form-group">
         <label class="form-label">Admission Letter *</label>
-        {{ attachments_form.admission_letter }}
+        {{ attachments_form.admission_letter }}{{ attachments_form.admission_letter.errors }}
       </div>
       <div class="form-group">
         <label class="form-label">Course Content *</label>
-        {{ attachments_form.course_content }}
+        {{ attachments_form.course_content }}{{ attachments_form.course_content.errors }}
       </div>
       <div class="form-group">
         <label class="form-label">Course Quotation *</label>
-        {{ attachments_form.quotation }}
+        {{ attachments_form.quotation }}{{ attachments_form.quotation.errors }}
       </div>
       <div class="form-group">
         <label class="form-label">Accreditation *</label>
-        {{ attachments_form.accreditation }}
+        {{ attachments_form.accreditation }}{{ attachments_form.accreditation.errors }}
       </div>
 
       <div class="form-group" style="margin-top:20px;">
         <label class="form-label" style="display:flex;align-items:center;gap:8px;text-transform:none;">
           {{ form.policy_acknowledged }} {{ form.policy_acknowledged.label }}
         </label>
+        {{ form.policy_acknowledged.errors }}
       </div>
 
       <div style="display:flex;gap:12px;margin-top:16px;">

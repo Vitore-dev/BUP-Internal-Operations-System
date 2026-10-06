@@ -3,7 +3,40 @@
 
 {% block content %}
 <div class="page-title">{{ application.program_title }}</div>
-<div class="page-sub">{{ application.get_application_type_display }} — <span class="badge badge-pending">{{ application.get_status_display }}</span></div>
+<div class="page-sub">
+  {{ application.get_application_type_display }} —
+  <span class="badge {% if application.status == 'DECLINED' or application.status == 'WITHDRAWN' %}badge-declined{% elif application.status == 'PENDING_PAYMENT' or application.status == 'COMPLETED' %}badge-approved{% else %}badge-pending{% endif %}">{{ application.get_status_display }}</span>
+  {% if application.round_number > 1 %}<span class="badge badge-hr">Round {{ application.round_number }}</span>{% endif %}
+</div>
+
+{% if application.status == 'RETURNED' %}
+<div class="card" style="border-left:4px solid #C9A84C;">
+  <div class="card-header"><h2>HR has sent this back for changes</h2></div>
+  <div class="card-body">
+    {% with ret=application.latest_return %}
+      {% if ret %}<p style="white-space:pre-line;">{{ ret.reason }}</p>
+      <p class="page-sub" style="margin-top:8px;">Sent back on {{ ret.returned_at|date:"d M Y" }}.</p>{% endif %}
+    {% endwith %}
+    {% if is_owner %}
+    <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+      <a href="{% url 'employee_services:study_bond_edit' application.pk %}" class="btn btn-primary btn-sm">Edit and resubmit</a>
+      <a href="{% url 'employee_services:study_bond_withdraw' application.pk %}" class="btn btn-outline btn-sm">Withdraw instead</a>
+    </div>
+    {% else %}
+    <p class="page-sub" style="margin-top:8px;">Waiting on the employee to make these changes.</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+{% if application.status == 'WITHDRAWN' %}
+<div class="card">
+  <div class="card-body">
+    <p><b>Withdrawn</b>{% if application.withdrawn_at %} on {{ application.withdrawn_at|date:"d M Y" }}{% endif %}.</p>
+    {% if application.withdrawn_reason %}<p style="margin-top:8px;">Reason: {{ application.withdrawn_reason }}</p>{% endif %}
+  </div>
+</div>
+{% endif %}
 
 <div class="card">
   <div class="card-header">
@@ -31,12 +64,13 @@
     <h3 style="margin:16px 0 8px;font-size:14px;color:#1B2A6B;">Approval to Register</h3>
     <p>{{ application.approver_comment|default:"—" }}</p>
     {% if application.status == 'DECLINED' %}<p><b>Reason:</b> {{ application.decline_reason }}</p>{% endif %}
+    {% if application.approved_by_link %}<p class="page-sub" style="margin-top:6px;">Approved electronically, using the emailed approval link, on {{ application.decision_date|date:"d M Y H:i" }}.</p>{% endif %}
     {% endif %}
 
     <h3 style="margin:16px 0 8px;font-size:14px;color:#1B2A6B;">Grade Verification</h3>
     <p>{{ application.get_grade_status_display }}</p>
 
-    <div style="display:flex;gap:12px;margin-top:20px;">
+    <div style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
       {% if can_verify_grade %}
       <a href="{% url 'employee_services:study_bond_verify_grade' application.pk %}" class="btn btn-primary btn-sm">Verify Prior Grade</a>
       {% endif %}
@@ -44,29 +78,63 @@
       <a href="{% url 'employee_services:study_bond_hr_review' application.pk %}" class="btn btn-primary btn-sm">HR Review</a>
       {% endif %}
       {% if application.status == 'PENDING_APPROVAL' and is_approver %}
-      <a href="{% url 'employee_services:study_bond_approver_review' application.pk %}" class="btn btn-primary btn-sm">Review & Decide</a>
+      <a href="{% url 'employee_services:study_bond_approver_review' application.pk %}" class="btn btn-primary btn-sm">Review &amp; Decide</a>
       {% endif %}
       {% if application.status == 'PENDING_PAYMENT' and request.user.role in 'FINANCE,ADMIN' %}
       <a href="{% url 'employee_services:study_bond_finance_process' application.pk %}" class="btn btn-primary btn-sm">Process Payment</a>
+      {% endif %}
+      {% if is_owner and application.can_withdraw and application.status != 'RETURNED' %}
+      <a href="{% url 'employee_services:study_bond_withdraw' application.pk %}" class="btn btn-outline btn-sm">Withdraw application</a>
       {% endif %}
     </div>
   </div>
 </div>
 
+{% if application.returns.all %}
+<div class="card">
+  <div class="card-header"><h2>History of changes requested</h2></div>
+  <div class="card-body">
+    <table>
+      <thead><tr><th>Sent back</th><th>What HR asked for</th><th>Resubmitted</th></tr></thead>
+      <tbody>
+        {% for ret in application.returns.all %}
+        <tr>
+          <td>{{ ret.returned_at|date:"d M Y" }}</td>
+          <td style="white-space:pre-line;">{{ ret.reason }}</td>
+          <td>{% if ret.resubmitted_at %}{{ ret.resubmitted_at|date:"d M Y" }}{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
 <div class="card">
   <div class="card-header"><h2>Attachments</h2></div>
   <div class="card-body">
-    {% if application.attachments.all %}
+    {% if application.current_attachments %}
     <table>
       <thead><tr><th>Type</th><th></th></tr></thead>
       <tbody>
-        {% for att in application.attachments.all %}
+        {% for att in application.current_attachments %}
         <tr><td>{{ att.get_attachment_type_display }}</td><td><a href="{{ att.file.url }}" class="btn btn-outline btn-sm">View</a></td></tr>
         {% endfor %}
       </tbody>
     </table>
     {% else %}
     <div class="empty">No attachments.</div>
+    {% endif %}
+
+    {% if application.superseded_attachments %}
+    <h3 style="margin:18px 0 8px;font-size:14px;color:#1B2A6B;">Earlier versions (replaced)</h3>
+    <table>
+      <tbody>
+        {% for att in application.superseded_attachments %}
+        <tr><td>{{ att.get_attachment_type_display }}</td><td>replaced {{ att.superseded_at|date:"d M Y" }}</td><td><a href="{{ att.file.url }}" class="btn btn-outline btn-sm">View</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
     {% endif %}
   </div>
 </div>

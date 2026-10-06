@@ -1,8 +1,5 @@
 from django.contrib import admin
-
-# Register your models here.
-from django.contrib import admin
-from .models import AuditLog
+from .models import AuditLog, EmailLog
 
 
 @admin.register(AuditLog)
@@ -17,3 +14,19 @@ class AuditLogAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+@admin.register(EmailLog)
+class EmailLogAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'status', 'event', 'to_addresses', 'subject')
+    list_filter = ('status', 'event')
+    search_fields = ('to_addresses', 'intended_to', 'subject')
+    readonly_fields = ('event', 'to_addresses', 'intended_to', 'subject', 'body_text', 'status',
+                       'error', 'related_id', 'created_at', 'sent_at')
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+

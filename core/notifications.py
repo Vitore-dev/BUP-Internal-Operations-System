@@ -1,18 +1,14 @@
 """
-Notification stub.
+One switch for every notification in the system.
 
-Email integration is explicitly deferred. Every point in a workflow that
-*would* eventually send an email — approver notified of a new application,
-employee notified of a status change, HR notified of a pending review —
-calls notify() now instead of doing nothing. When email is built (likely
-Microsoft Graph, given GRAPH_SENDER_EMAIL already exists in settings.py),
-only this file changes. No view that calls notify() needs to be touched.
+Views call notify() at each workflow step. For Study Bond events the message
+is built in employee_services/study_bond_emails.py and sent through
+core/mailer.py (Microsoft Graph). No view needs to know how email works, and
+a failure here can never break a workflow step.
 
 Usage:
     from core.notifications import notify
-    notify('study_bond_submitted', recipient=application.approver, context={
-        'application': application,
-    })
+    notify('study_bond_approved', recipient=application.employee, context={'application': application})
 """
 
 import logging
@@ -21,26 +17,25 @@ logger = logging.getLogger('core.notifications')
 
 
 def notify(event, recipient, context=None):
-    """
-    event: short string identifying what happened, e.g. 'study_bond_submitted',
-           'study_bond_approved', 'study_bond_declined', 'profile_incomplete_reminder'.
-    recipient: the CustomUser who would receive the notification.
-    context: dict of whatever the eventual email template will need
-             (e.g. {'application': application, 'actor': request.user}).
-
-    Today: logs the event so it's visible in application logs and easy to
-    grep for once email is being built, without touching the database twice
-    for something the caller's view has likely already written to AuditLog.
-
-    Later: this becomes the single place that renders an email template and
-    sends via Microsoft Graph, using GRAPH_SENDER_EMAIL from settings.
-    """
     context = context or {}
     logger.info(
         "notify: event=%s recipient=%s context_keys=%s",
-        event,
-        getattr(recipient, 'username', recipient),
-        list(context.keys()),
+        event, getattr(recipient, 'username', recipient), list(context.keys()),
     )
-    # Intentionally a no-op beyond logging until email is implemented.
-    return None
+    try:
+        specs = []
+        if event.startswith('study_bond_'):
+            # imported here, not at the top, so core never depends on employee_services at import time
+            from employee_services.study_bond_emails import emails_for
+            specs = emails_for(event, recipient, context)
+
+        results = []
+        if specs:
+            from .mailer import send_email
+            for spec in specs:
+                results.append(send_email(event=event, **spec))
+        return results
+    except Exception:
+        logger.exception("notify failed for event %s (the workflow step itself is unaffected)", event)
+        return []
+

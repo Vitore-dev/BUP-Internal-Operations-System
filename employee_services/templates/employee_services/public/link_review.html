@@ -1,0 +1,80 @@
+{% extends 'employee_services/public/_public_base.html' %}
+{% block title %}Study Bond approval{% endblock %}
+
+{% block content %}
+<h1>Study Bond approval</h1>
+<p class="lead">Hello {{ approver_name }}. Please look at this application and give your decision. You do not need to sign in.</p>
+
+<div class="notice">This link works once, and expires on {{ link.expires_at|date:"d F Y" }}. After you decide, it stops working.</div>
+
+<div class="card">
+  <h2>The application</h2>
+  <dl>
+    <dt>Employee</dt><dd>{{ application.employee.get_full_name }}</dd>
+    <dt>Programme</dt><dd>{{ application.program_title }}</dd>
+    <dt>Institution</dt><dd>{{ application.institution }}</dd>
+    <dt>Period</dt><dd>{{ application.period_start|date:"d M Y" }} – {{ application.period_end|date:"d M Y" }}</dd>
+    <dt>Total cost of the course</dt><dd>BWP {{ application.total_cost }}</dd>
+    <dt>Type</dt><dd>{{ application.get_application_type_display }}{% if application.is_continuation and application.previous_application %} (continuing {{ application.previous_application.program_title }}){% endif %}</dd>
+    {% if application.linked_project %}<dt>Study</dt><dd>{{ application.linked_project.name }}</dd>{% endif %}
+    <dt>Submitted</dt><dd>{{ application.submitted_at|date:"d M Y" }}</dd>
+  </dl>
+</div>
+
+<div class="card">
+  <h2>Checked by HR</h2>
+  <dl>
+    <dt>Verified base pay</dt><dd>BWP {{ application.verified_base_pay|default_if_none:"—" }}</dd>
+    <dt>Cost of subjects</dt><dd>BWP {{ application.cost_of_subjects|default_if_none:"—" }}</dd>
+    <dt>Amount to be paid by BUP</dt><dd>BWP {{ application.amount_paid_by_bup|default_if_none:"—" }}</dd>
+    <dt>Most BUP can pay (10% of base pay or BWP 3,000 a year, whichever is less)</dt><dd>BWP {{ max_allowed|default_if_none:"—" }}</dd>
+    {% if application.hr_notes %}<dt>HR notes</dt><dd style="white-space:pre-line;">{{ application.hr_notes }}</dd>{% endif %}
+  </dl>
+</div>
+
+<div class="card">
+  <h2>Attachments</h2>
+  {% if attachments %}
+  <ul class="files">
+    {% for att in attachments %}
+    <li>
+      <span>{{ att.get_attachment_type_display }}</span>
+      <a class="btn btn-outline btn-small" href="{% url 'employee_services:link_attachment' token att.pk %}" target="_blank" rel="noopener noreferrer">Open</a>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>No attachments were submitted.</p>
+  {% endif %}
+</div>
+
+<form method="POST" class="card">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="preview">
+  <h2>Your decision</h2>
+  <p class="lead" style="margin-bottom:0;">Answer the checklist, add a comment if you like, then choose Approve or Decline.</p>
+
+  {% if form.non_field_errors %}<div class="error">{{ form.non_field_errors }}</div>{% endif %}
+
+  {% for field in form %}
+    {% if field.name in 'program_relevant,accredited_institution,good_standing_6_months,tuition_cap_balance_ok,supervisor_notified' %}
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% endif %}
+  {% endfor %}
+
+  <label for="{{ form.approver_comment.id_for_label }}">Comment (optional)</label>
+  {{ form.approver_comment }}
+
+  <label for="{{ form.decline_reason.id_for_label }}">Reason (needed if you decline)</label>
+  {{ form.decline_reason }}
+  {% for error in form.decline_reason.errors %}<div class="error">{{ error }}</div>{% endfor %}
+  {% for error in form.decision.errors %}<div class="error">{{ error }}</div>{% endfor %}
+
+  <div class="actions">
+    <button type="submit" name="decision" value="APPROVED" class="btn btn-primary">Approve</button>
+    <button type="submit" name="decision" value="DECLINED" class="btn btn-danger">Decline</button>
+  </div>
+  <p class="lead" style="margin:12px 0 0;font-size:14px;">You will be asked to confirm before anything is recorded.</p>
+</form>
+{% endblock %}

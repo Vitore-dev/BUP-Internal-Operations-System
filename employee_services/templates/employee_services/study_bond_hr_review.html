@@ -3,7 +3,30 @@
 
 {% block content %}
 <div class="page-title">HR Review — {{ application.program_title }}</div>
-<div class="page-sub">Check the application and attachments below, then verify costs. This must be done before the approver can review.</div>
+<div class="page-sub">
+  Check the application and attachments below, then verify costs. This must be done before the approver can review.
+  {% if application.round_number > 1 %}<span class="badge badge-hr">Round {{ application.round_number }}</span>{% endif %}
+</div>
+
+{% if application.returns.all %}
+<div class="card" style="border-left:4px solid #C9A84C;">
+  <div class="card-header"><h2>Earlier rounds</h2></div>
+  <div class="card-body">
+    <table>
+      <thead><tr><th>Sent back</th><th>What you asked for</th><th>Resubmitted</th></tr></thead>
+      <tbody>
+        {% for ret in application.returns.all %}
+        <tr>
+          <td>{{ ret.returned_at|date:"d M Y" }}</td>
+          <td style="white-space:pre-line;">{{ ret.reason }}</td>
+          <td>{% if ret.resubmitted_at %}{{ ret.resubmitted_at|date:"d M Y" }}{% else %}—{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
 
 <div class="card">
   <div class="card-header"><h2>Application Details</h2></div>
@@ -16,24 +39,53 @@
     <p style="margin-top:8px;"><b>Institution:</b> {{ application.institution }}</p>
     <p style="margin-top:8px;"><b>Period:</b> {{ application.period_start|date:"d M Y" }} – {{ application.period_end|date:"d M Y" }}</p>
     <p style="margin-top:8px;"><b>Total Cost:</b> BWP {{ application.total_cost }}</p>
-    {% if application.linked_project %}
-    <p style="margin-top:8px;"><b>Linked Project:</b> {{ application.linked_project.name }}</p>
-    {% else %}
-    <p style="margin-top:8px;"><b>Linked Project:</b> None (routes to Director)</p>
-    {% endif %}
-    <p style="margin-top:8px;"><b>Approver:</b> {{ application.approver.get_full_name }}</p>
     <p style="margin-top:8px;"><b>Submitted:</b> {{ application.submitted_at|date:"d M Y" }}</p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Who approves</h2></div>
+  <div class="card-body">
+    {% if application.linked_project %}
+    <p><b>Study:</b> {{ application.linked_project.name }}</p>
+    {% else %}
+    <p><b>Study:</b> None (goes to the Director)</p>
+    {% endif %}
+    <p style="margin-top:8px;"><b>Approver:</b> {{ application.approver.get_full_name|default:application.approver.username }}</p>
+
+    {% if pi_profile %}
+    <p style="margin-top:8px;"><b>Approval link goes to:</b> {{ pi_profile.approval_email|default:"(no address on file)" }}
+      {% if pi_profile.email_checked %}
+        <span class="badge badge-approved">Checked</span>
+      {% else %}
+        <span class="badge badge-pending">Not checked yet</span>
+      {% endif %}
+    </p>
+    <p class="page-sub" style="margin-top:4px;">This approver does not sign in. They get a one-time link by email, valid for a few days.</p>
+    {% else %}
+    <p class="page-sub" style="margin-top:4px;">This approver signs in to decide.</p>
+    {% endif %}
+
+    <form method="POST" style="margin-top:16px;">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="change_approver">
+      <div class="form-group">
+        <label class="form-label">{{ change_form.approver.label }}</label>
+        {{ change_form.approver }}{{ change_form.approver.errors }}
+      </div>
+      <button type="submit" class="btn btn-outline btn-sm">Change approver</button>
+    </form>
   </div>
 </div>
 
 <div class="card">
   <div class="card-header"><h2>Attachments</h2></div>
   <div class="card-body">
-    {% if application.attachments.all %}
+    {% if application.current_attachments %}
     <table>
       <thead><tr><th>Type</th><th></th></tr></thead>
       <tbody>
-        {% for att in application.attachments.all %}
+        {% for att in application.current_attachments %}
         <tr>
           <td>{{ att.get_attachment_type_display }}</td>
           <td><a href="{{ att.file.url }}" target="_blank" class="btn btn-outline btn-sm">View</a></td>
@@ -52,28 +104,63 @@
   <div class="card-body">
     <p style="margin-bottom:16px;">10% of base pay or BWP 3000/fiscal year, whichever is less.</p>
 
+    {% if pi_problem %}
+    <div style="background:#FFF6DD;border:1px solid #E8CF84;border-radius:8px;padding:10px 14px;margin-bottom:14px;">{{ pi_problem }}</div>
+    {% endif %}
+    {% if form.errors %}
+    <div class="page-sub" style="color:#b02a2a;margin-bottom:12px;">Please fix the problems marked below.</div>
+    {% endif %}
+
     <form method="POST">
       {% csrf_token %}
+      <input type="hidden" name="action" value="send">
       <div class="form-group">
         <label class="form-label">Verified Base Pay (BWP)</label>
-        {{ form.verified_base_pay }}
+        {{ form.verified_base_pay }}{{ form.verified_base_pay.errors }}
       </div>
       <div class="form-group">
         <label class="form-label">Cost of Subjects (limit 3/semester)</label>
-        {{ form.cost_of_subjects }}
+        {{ form.cost_of_subjects }}{{ form.cost_of_subjects.errors }}
       </div>
       <div class="form-group">
         <label class="form-label">Amount Paid by BUP</label>
-        {{ form.amount_paid_by_bup }}
+        {{ form.amount_paid_by_bup }}{{ form.amount_paid_by_bup.errors }}
       </div>
       <div class="form-group">
-        <label class="form-label">Notes</label>
+        <label class="form-label">Notes (internal; the approver can see these, the employee is not emailed them)</label>
         {{ form.hr_notes }}
       </div>
-      <div style="display:flex;gap:12px;margin-top:16px;">
-        <button type="submit" class="btn btn-primary">Send to Approver</button>
+
+      {% if pi_profile and not pi_profile.email_checked %}
+      <div class="form-group" style="margin-top:8px;">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;text-transform:none;">
+          <input type="checkbox" name="confirm_pi_email" value="1">
+          I have checked that <b>{{ pi_profile.approval_email|default:"(no address)" }}</b> is the correct email address for {{ pi_profile.display_name }}.
+        </label>
+      </div>
+      {% endif %}
+
+      <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary">{% if pi_profile %}Send approval link{% else %}Send to Approver{% endif %}</button>
         <a href="{% url 'employee_services:study_bond_hr_queue' %}" class="btn btn-outline">Back to Queue</a>
       </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h2>Send back to the employee</h2></div>
+  <div class="card-body">
+    <p class="page-sub" style="margin-bottom:12px;">Use this when something is missing or wrong. The employee can fix it and send it back to you.</p>
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="return">
+      <div class="form-group">
+        <label class="form-label">{{ return_form.reason.label }}</label>
+        {{ return_form.reason }}{{ return_form.reason.errors }}
+        <div class="page-sub">{{ return_form.reason.help_text }}</div>
+      </div>
+      <button type="submit" class="btn btn-outline">Return to employee</button>
     </form>
   </div>
 </div>
