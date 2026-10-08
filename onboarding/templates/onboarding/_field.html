@@ -1,0 +1,4 @@
+{% load onboarding_tags %}<label class="ob-label" for="id_{{ name }}">{{ label }}{% if optional %} <span class="ob-muted">(optional)</span>{% endif %}</label>
+{% if kind == 'textarea' %}<textarea class="ob-textarea" id="id_{{ name }}" name="{{ name }}">{{ values|get:name }}</textarea>
+{% else %}<input class="ob-input" id="id_{{ name }}" name="{{ name }}" type="{{ kind|default:'text' }}" value="{{ values|get:name }}"{% if hint %} placeholder="{{ hint }}"{% endif %}>{% endif %}
+{% if errors|get:name %}<div class="ob-error" role="alert">{{ errors|get:name }}</div>{% endif %}

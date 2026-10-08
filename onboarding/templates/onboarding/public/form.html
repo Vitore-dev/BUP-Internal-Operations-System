@@ -1,0 +1,114 @@
+{% extends 'onboarding/public/base.html' %}
+{% block title %}Personal details form{% endblock %}
+
+{% block content %}
+{% include 'onboarding/_ob_styles.html' %}
+<div class="ob">
+  <h1>Personal Details Form</h1>
+  <p class="lead">Welcome, {{ req.recipient_name }}. Please fill in your details for BUP Human Resources. This link is private to you.</p>
+
+  {% if req.reopen_note %}<div class="ob-note"><b>HR asked you to correct something:</b><br>{{ req.reopen_note|linebreaksbr }}</div>{% endif %}
+  {% if errors or upload_errors %}
+  <div class="ob-alert" role="alert"><b>Some things need your attention.</b> They are marked below. Please also attach your documents again, because a page cannot keep files for you.
+    {% if upload_errors %}<ul style="margin:8px 0 0 18px;padding:0;">{% for e in upload_errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}</div>
+  {% endif %}
+
+  <form method="POST" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="ob-card">
+      <h2>Personal details</h2>
+      {% include 'onboarding/_field.html' with name='full_names' label='Names' %}
+      <div class="ob-grid">
+        <div>{% include 'onboarding/_field.html' with name='date_of_birth' label='Date of birth' kind='date' %}</div>
+        <div>
+          <label class="ob-label" for="id_gender">Gender</label>
+          <select class="ob-select" id="id_gender" name="gender"><option value="">Choose…</option>
+            {% for value, label in genders %}<option value="{{ value }}" {% if values.gender == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+          {% if errors.gender %}<div class="ob-error" role="alert">{{ errors.gender }}</div>{% endif %}
+        </div>
+        <div>
+          <label class="ob-label" for="id_marital_status">Marital status</label>
+          <select class="ob-select" id="id_marital_status" name="marital_status"><option value="">Choose…</option>
+            {% for value, label in maritals %}<option value="{{ value }}" {% if values.marital_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+          {% if errors.marital_status %}<div class="ob-error" role="alert">{{ errors.marital_status }}</div>{% endif %}
+        </div>
+        <div>{% include 'onboarding/_field.html' with name='telephone' label='Telephone no.' kind='tel' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='id_number' label='ID (Omang) or passport number' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='id_expiry' label='Passport expiry date' kind='date' optional=True %}</div>
+      </div>
+      {% include 'onboarding/_field.html' with name='email_address' label='E-mail address' kind='email' %}
+    </div>
+
+    <div class="ob-card">
+      <h2>Address</h2>
+      {% include 'onboarding/_field.html' with name='postal_address' label='Postal address' kind='textarea' %}
+      {% include 'onboarding/_field.html' with name='physical_address' label='Physical address' kind='textarea' %}
+    </div>
+
+    <div class="ob-card">
+      <h2>Your position</h2>
+      <div class="ob-grid">
+        <div>{% include 'onboarding/_field.html' with name='position_title' label='Position title' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='program' label='Program' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='assumption_date' label='Date of assumption of duty' kind='date' %}</div>
+      </div>
+    </div>
+
+    <div class="ob-card">
+      <h2>Next of kin</h2>
+      <div class="ob-grid">
+        <div>{% include 'onboarding/_field.html' with name='kin_name' label='Next of kin names' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='kin_relationship' label='Relationship' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='kin_telephone' label='Telephone numbers' kind='tel' %}</div>
+      </div>
+    </div>
+
+    <div class="ob-card">
+      <h2>Emergency contact person</h2>
+      <div class="ob-grid">
+        <div>{% include 'onboarding/_field.html' with name='emergency_name' label='Contact names' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='emergency_relationship' label='Relationship' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='emergency_telephone' label='Telephone numbers' kind='tel' %}</div>
+      </div>
+    </div>
+
+    <div class="ob-card">
+      <h2>Academic qualifications</h2>
+      {% include 'onboarding/_field.html' with name='qualifications' label='List your qualifications' kind='textarea' optional=True %}
+    </div>
+
+    <div class="ob-card">
+      <h2>Bank details</h2>
+      <p class="ob-muted">For your salary. Only BUP Human Resources can see these.</p>
+      <div class="ob-grid">
+        <div>{% include 'onboarding/_field.html' with name='bank_name' label='Bank name' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='bank_branch_name' label='Branch name' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='bank_branch_code' label='Branch code' %}</div>
+        <div>{% include 'onboarding/_field.html' with name='bank_account_number' label='Account number' %}</div>
+      </div>
+      {% include 'onboarding/_field.html' with name='bank_account_name' label='Names appearing on the account' %}
+    </div>
+
+    <div class="ob-card">
+      <h2>Documents to submit</h2>
+      <p class="ob-muted">Attach a clear scan or photo: PDF, JPG or PNG, up to 5 MB each. You can choose several files for one item.</p>
+      {% for value, label in kinds %}
+      <label class="ob-label" for="doc_{{ value }}">{{ label }}{% if value == 'ID_COPY' %} <b>(required)</b>{% else %} <span class="ob-muted">(if you have one)</span>{% endif %}</label>
+      <input class="ob-input" id="doc_{{ value }}" type="file" name="doc_{{ value }}" accept=".pdf,.jpg,.jpeg,.png" multiple>
+      {% endfor %}
+    </div>
+
+    <div class="ob-card">
+      <h2>Declaration</h2>
+      <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;">
+        <input type="checkbox" name="declaration" value="yes" style="margin-top:6px;width:20px;height:20px;" {% if values.declaration == 'yes' %}checked{% endif %}>
+        <span>I confirm that the above information is a correct record of my personal details.</span>
+      </label>
+      {% if errors.declaration %}<div class="ob-error" role="alert">{{ errors.declaration }}</div>{% endif %}
+      {% include 'onboarding/_field.html' with name='declaration_name' label='Type your full name to sign' %}
+      <div class="ob-actions"><button type="submit" class="ob-btn ob-btn-primary">Send my details to HR</button></div>
+    </div>
+  </form>
+</div>
+{% endblock %}

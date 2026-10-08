@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}{{ req.recipient_name }}{% endblock %}
+
+{% block content %}
+{% include 'onboarding/_ob_styles.html' %}
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+  <div class="page-title" style="margin:0;">{{ req.recipient_name }}</div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <a href="{% url 'onboarding:hr_list' %}" class="btn btn-outline btn-sm">Back to the list</a>
+    {% if has_data %}<a href="{% url 'onboarding:hr_pdf' req.pk %}" class="btn btn-gold btn-sm">Download PDF</a>{% endif %}
+  </div>
+</div>
+<div class="page-sub"><span class="ob-pill">{{ req.get_status_display }}</span> &nbsp; {{ req.recipient_email }} · sent {{ req.created_at|date:"d M Y" }}{% if req.submitted_at %} · submitted {{ req.submitted_at|date:"d M Y, H:i" }}{% endif %}</div>
+
+<div class="card">
+  <div class="card-header"><h2>What you can do</h2></div>
+  <div class="card-body ob">
+    {% if req.status == 'SENT' %}
+      <p>{% if req.reopen_note %}This was sent back for corrections and is waiting for the new employee.{% else %}Waiting for the new employee to fill it in.{% endif %}
+        {% if req.last_used_at %}They last opened it {{ req.last_used_at|date:"d M Y, H:i" }}.{% else %}They have not opened it yet.{% endif %}</p>
+      <div class="ob-actions" style="margin-top:6px;">
+        <form method="POST" action="{% url 'onboarding:hr_action' req.pk %}">{% csrf_token %}<input type="hidden" name="action" value="resend"><button class="ob-btn" type="submit">Send the link again</button></form>
+        <form method="POST" action="{% url 'onboarding:hr_action' req.pk %}">{% csrf_token %}<input type="hidden" name="action" value="close"><button class="ob-btn ob-btn-danger" type="submit">Close this form</button></form>
+      </div>
+    {% elif req.status == 'SUBMITTED' %}
+      <form method="POST" action="{% url 'onboarding:hr_action' req.pk %}">{% csrf_token %}<input type="hidden" name="action" value="reopen">
+        <label class="ob-label" for="note" style="margin-top:0;">Send it back for corrections: what needs to change?</label>
+        <textarea class="ob-textarea" id="note" name="note"></textarea>
+        <div class="ob-actions"><button class="ob-btn" type="submit">Send back to the new employee</button></div>
+      </form>
+    {% else %}
+      <p>This form is closed. Its link no longer works.</p>
+    {% endif %}
+    <p class="ob-muted" style="margin-top:14px;">When you have what you need in HR's own records, you can <a href="{% url 'onboarding:hr_delete' req.pk %}">delete this form for good</a>.</p>
+  </div>
+</div>
+
+{% if has_data %}
+<div class="card">
+  <div class="card-header"><h2>Documents</h2></div>
+  <div class="card-body">
+    {% if documents %}
+    <table>
+      <thead><tr><th>Document</th><th>File</th><th>Size</th><th></th></tr></thead>
+      <tbody>
+        {% for d in documents %}
+        <tr><td>{{ d.get_kind_display }}</td><td>{{ d.original_name }}</td><td>{{ d.size|filesizeformat }}</td>
+          <td><a href="{% url 'onboarding:hr_document' req.pk d.pk %}" class="btn btn-outline btn-sm">Download</a></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty">No documents were attached.</div>{% endif %}
+  </div>
+</div>
+<div class="card"><div class="card-body">
+  {% include 'onboarding/_details.html' %}
+  <p class="ob-muted ob" style="margin-top:18px;">Signed electronically by <b>{{ req.declaration_name }}</b> on {{ req.submitted_at|date:"d F Y" }} at {{ req.submitted_at|date:"H:i" }}, confirming the details above are correct.</p>
+</div></div>
+<p class="ob-muted ob">Every time this page, the PDF or a document is opened, it is recorded in the audit log.</p>
+{% endif %}
+{% endblock %}

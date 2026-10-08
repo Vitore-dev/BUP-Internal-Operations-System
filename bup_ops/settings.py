@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'dashboard',
     'director',
     'employee_services',
+    'onboarding',
     'research',
     'global_health',
     'research_support',
@@ -152,3 +153,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SAGE_URL = config('SAGE_URL', default='#')
+
+ONBOARDING_LINK_DAYS = 30                       # how long a new employee's link works
+PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media' # where attached documents are kept (outside the public /media/ folder)

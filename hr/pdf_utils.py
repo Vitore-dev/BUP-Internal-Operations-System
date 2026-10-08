@@ -213,7 +213,7 @@ def generate_confirmation_letter_pdf(letter, hr_profile, request):
         footer_left = (
             "Botswana-UPenn Partnership  Botswana Headquarters\n"
             "University of Botswana Main Campus\n"
-            "244G - Room 103\n"
+            "Block 134\n"
             "(Postal Address: PO Box AC 157 ACH)\n"
             "Gaborone\n"
             "Botswana\n"

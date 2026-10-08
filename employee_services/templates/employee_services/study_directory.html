@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block title %}Study Directory{% endblock %}
+
+{% block content %}
+<div class="page-title">Study Directory</div>
+<div class="page-sub">All active BUP research studies</div>
+
+<div class="card">
+  {% if studies %}
+  <table>
+    <thead><tr><th>Study</th><th>Summary</th><th>PI</th><th>Contact</th></tr></thead>
+    <tbody>
+      {% for study in studies %}
+      <tr>
+        <td><b>{{ study.name }}</b></td>
+        <td>{{ study.short_summary|default:"—"|truncatechars:80 }}</td>
+        <td>{{ study.pi.get_full_name }}</td>
+        <td>{{ study.contact_email|default:"—" }}{% if study.contact_phone %} / {{ study.contact_phone }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty">No studies on record yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

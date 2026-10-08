@@ -107,7 +107,7 @@ def generate_study_bond_pdf(application):
     story.append(table)
     story.append(Spacer(1, 3 * mm))
     story.append(Paragraph(
-        "10% of the employee's base pay or BWP 3000 per fiscal year (or equivalent), whichever is less.",
+        "10% of the employee's base pay or $3000 per fiscal year (or equivalent), whichever is less.",
         small,
     ))
     story.append(Spacer(1, 5 * mm))
@@ -120,8 +120,7 @@ def generate_study_bond_pdf(application):
     story.append(Paragraph(f"Verified base pay: {_dash_if_blank(application.verified_base_pay, lambda v: f'BWP {v:,.2f}')}", normal))
     cap = application.max_allowed_bup_amount()
     story.append(Paragraph(f"Confirmed cap amount: {_dash_if_blank(cap, lambda v: f'BWP {v:,.2f}')}", normal))
-    if application.hr_notes:
-        story.append(Paragraph(f"Notes: {application.hr_notes}", normal))
+    
     if application.hr_reviewed_by:
         story.append(Paragraph(
             f"Reviewed by {application.hr_reviewed_by.get_full_name()} on "
@@ -207,7 +206,7 @@ def generate_study_bond_pdf(application):
         footer_left = (
             "Botswana-UPenn Partnership  Botswana Headquarters\n"
             "University of Botswana Main Campus\n"
-            "244G - Room 103\n"
+            "Block 134\n"
             "(Postal Address: PO Box AC 157 ACH)\n"
             "Gaborone\nBotswana\nTel: +267.355.4855\nFax: +267.393.2267"
         )

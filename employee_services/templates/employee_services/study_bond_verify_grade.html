@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Verify Prior Grade{% endblock %}
+
+{% block content %}
+<div class="page-title">Verify Prior Grade</div>
+<div class="page-sub">Application #{{ previous.pk }} — {{ previous.program_title }}</div>
+<div class="card">
+  <div class="card-body">
+    <form method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label">Grade Result</label>
+        {{ form.grade_status }}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes</label>
+        {{ form.grade_notes }}
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;">
+        <button type="submit" class="btn btn-primary">Confirm</button>
+        <a href="{% url 'employee_services:study_bond_detail' continuation.pk %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

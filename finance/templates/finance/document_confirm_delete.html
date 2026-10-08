@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Delete Document{% endblock %}
+
+{% block content %}
+<div class="page-title">Delete — {{ document.title }}</div>
+<div class="page-sub">This permanently removes the document. It cannot be undone.</div>
+
+<div class="card">
+  <div class="card-body">
+    <p>You are about to delete <b>{{ document.title }}</b>, created {{ document.created_at|date:"d M Y" }}.</p>
+    <ul style="margin:12px 0 0 20px;">
+      <li>{{ version_count }} saved version{{ version_count|pluralize }}</li>
+      <li>{{ source_count }} uploaded file{{ source_count|pluralize }}, and their page thumbnails</li>
+    </ul>
+    <p style="margin-top:12px;">The files are removed from the server too. The audit log will record who deleted it.</p>
+    <form method="POST" style="display:flex;gap:12px;margin-top:20px;flex-wrap:wrap;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">Yes, delete this document permanently</button>
+      <a href="{% url 'finance:document_list' %}" class="btn btn-outline">Keep it</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

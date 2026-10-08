@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load onboarding_tags %}
+{% block title %}Send a form{% endblock %}
+
+{% block content %}
+{% include 'onboarding/_ob_styles.html' %}
+<div class="page-title">Send the Personal Details Form</div>
+<div class="page-sub">The new employee is emailed a private link. They do not need an account.</div>
+<form method="POST" class="ob">
+  {% csrf_token %}
+  <div class="ob-card">
+    <div class="ob-grid">
+      <div><label class="ob-label" for="rn" style="margin-top:0;">New employee's name</label><input class="ob-input" id="rn" name="recipient_name" value="{{ values|get:'recipient_name' }}"></div>
+      <div><label class="ob-label" for="re" style="margin-top:0;">Their email address</label><input class="ob-input" id="re" type="email" name="recipient_email" value="{{ values|get:'recipient_email' }}"></div>
+    </div>
+    <h2 style="margin-top:22px;">Optional: what you already know</h2>
+    <p class="ob-muted">These are filled in for them to check and correct.</p>
+    <div class="ob-grid">
+      <div><label class="ob-label" for="pt">Position title</label><input class="ob-input" id="pt" name="position_title" value="{{ values|get:'position_title' }}"></div>
+      <div><label class="ob-label" for="pg">Program</label><input class="ob-input" id="pg" name="program" value="{{ values|get:'program' }}"></div>
+      <div><label class="ob-label" for="ad">Date of assumption of duty</label><input class="ob-input" id="ad" type="date" name="assumption_date" value="{{ values|get:'assumption_date' }}"></div>
+    </div>
+    <div class="ob-actions"><button type="submit" class="ob-btn ob-btn-primary">Email the form</button><a href="{% url 'onboarding:hr_list' %}" class="ob-btn">Cancel</a></div>
+  </div>
+</form>
+{% endblock %}

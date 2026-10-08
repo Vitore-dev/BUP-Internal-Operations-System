@@ -1,0 +1,24 @@
+<style>
+  .ob { font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif; color: #1E2440; font-size: 16px; line-height: 1.5; }
+  .ob h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #1B2A6B; margin: 0 0 10px; }
+  .ob-card { background: #fff; border: 1px solid #DDE2F0; border-radius: 12px; padding: 18px; margin: 0 0 16px; box-sizing: border-box; }
+  .ob-note { background: #FFF6DD; border: 1px solid #E8CF84; border-radius: 10px; padding: 12px 14px; margin: 0 0 16px; color: #5E3E00; }
+  .ob-alert { background: #FBE4E4; border: 1px solid #D99A9A; border-radius: 10px; padding: 12px 14px; margin: 0 0 16px; color: #6E1818; }
+  .ob-muted { color: #5A6385; font-size: 14px; }
+  .ob-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+  @media (max-width: 640px) { .ob-grid { grid-template-columns: 1fr; } }
+  .ob-label { display: block; font-weight: 600; margin: 14px 0 4px; }
+  .ob-input, .ob-textarea, .ob-select { width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #B9C1DE; border-radius: 8px; font: inherit; color: #1E2440; background: #fff; min-height: 44px; }
+  .ob-textarea { min-height: 84px; resize: vertical; }
+  .ob-error { color: #8A1F1F; font-size: 14px; margin-top: 4px; }
+  .ob-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 20px; border-radius: 10px; font: inherit; font-weight: 700; text-decoration: none; cursor: pointer; border: 2px solid #1B2A6B; background: #fff; color: #1B2A6B; }
+  .ob-btn-primary { background: #1B2A6B; color: #fff; }
+  .ob-btn-danger { border-color: #8A1F1F; color: #8A1F1F; }
+  .ob-btn:focus, .ob-input:focus, .ob-textarea:focus, .ob-select:focus { outline: 3px solid #C9A84C; outline-offset: 2px; }
+  .ob-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+  .ob-pill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: #E4E8F7; color: #1B2A6B; font-size: 13px; font-weight: 600; }
+  .ob-table { width: 100%; border-collapse: collapse; }
+  .ob-table td { border: 1px solid #B9C1DE; padding: 8px 10px; vertical-align: top; font-size: 15px; }
+  .ob-table td.ob-key { width: 36%; font-weight: 600; background: #F7F8FD; }
+  .ob-scroll { overflow-x: auto; }
+</style>

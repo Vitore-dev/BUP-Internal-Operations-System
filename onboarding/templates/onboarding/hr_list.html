@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}New starter forms{% endblock %}
+
+{% block content %}
+{% include 'onboarding/_ob_styles.html' %}
+<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+  <div class="page-title" style="margin:0;">New starter forms</div>
+  <a href="{% url 'onboarding:hr_new' %}" class="btn btn-primary btn-sm">+ Send a form</a>
+</div>
+<div class="page-sub">The Personal Details Form, sent to people who are not on the system yet.</div>
+
+<div class="card">
+  <div class="card-body" style="display:flex;flex-wrap:wrap;gap:8px;">
+    <a href="{% url 'onboarding:hr_list' %}" class="btn {% if not wanted %}btn-primary{% else %}btn-outline{% endif %} btn-sm">All ({{ total }})</a>
+    {% for value, label, count in status_counts %}<a href="?status={{ value }}" class="btn {% if wanted == value %}btn-primary{% else %}btn-outline{% endif %} btn-sm">{{ label }} ({{ count }})</a>{% endfor %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+    {% if requests %}
+    <div class="ob-scroll"><table>
+      <thead><tr><th>New employee</th><th>Position</th><th>Status</th><th>Sent</th><th>Submitted</th><th></th></tr></thead>
+      <tbody>
+        {% for r in requests %}
+        <tr>
+          <td>{{ r.recipient_name }}<br><span class="ob-muted">{{ r.recipient_email }}</span></td>
+          <td>{{ r.position_title|default:"—" }}</td>
+          <td>{{ r.get_status_display }}</td>
+          <td>{{ r.created_at|date:"d M Y" }}</td>
+          <td>{% if r.submitted_at %}{{ r.submitted_at|date:"d M Y" }}{% else %}—{% endif %}</td>
+          <td><a href="{% url 'onboarding:hr_detail' r.pk %}" class="btn btn-outline btn-sm">Open</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}
+    <div class="empty">Nothing here yet. Use "Send a form" to email a new employee their link.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

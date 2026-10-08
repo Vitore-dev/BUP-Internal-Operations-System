@@ -15,6 +15,13 @@ import logging
 
 logger = logging.getLogger('core.notifications')
 
+# event name prefix -> the module that builds those emails
+EMAIL_BUILDERS = {
+    'study_bond_': 'employee_services.study_bond_emails',
+    'review_': 'reviews.emails',
+    'onboarding_': 'onboarding.emails',
+}
+
 
 def notify(event, recipient, context=None):
     context = context or {}
@@ -24,10 +31,13 @@ def notify(event, recipient, context=None):
     )
     try:
         specs = []
-        if event.startswith('study_bond_'):
-            # imported here, not at the top, so core never depends on employee_services at import time
-            from employee_services.study_bond_emails import emails_for
-            specs = emails_for(event, recipient, context)
+        # Each feature's email builders, found by the start of the event name. Imported only when
+        # that kind of event happens, so core never depends on an app that is not installed.
+        for prefix, module in EMAIL_BUILDERS.items():
+            if event.startswith(prefix):
+                import importlib
+                specs = importlib.import_module(module).emails_for(event, recipient, context)
+                break
 
         results = []
         if specs:

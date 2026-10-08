@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}Finance Documents{% endblock %}
- 
+
 {% block content %}
 <div class="page-title">Finance — Documents</div>
- 
+
 <div class="card">
   <div class="card-header">
     <h2>All Documents</h2>
@@ -15,7 +15,7 @@
       <button type="submit" class="btn btn-outline btn-sm">Search</button>
       {% if query %}<a href="{% url 'finance:document_list' %}" class="btn btn-outline btn-sm">Clear</a>{% endif %}
     </form>
- 
+
     {% if documents %}
     <table>
       <thead><tr><th>Title</th><th>Created</th><th></th></tr></thead>
@@ -27,6 +27,7 @@
           <td>
             <a href="{% url 'finance:document_builder' doc.pk %}" class="btn btn-primary btn-sm">Edit</a>
             <a href="{% url 'finance:document_versions' doc.pk %}" class="btn btn-outline btn-sm">Versions</a>
+            <a href="{% url 'finance:document_delete' doc.pk %}" class="btn btn-danger btn-sm">Delete</a>
           </td>
         </tr>
         {% endfor %}
@@ -40,4 +41,5 @@
   </div>
 </div>
 {% endblock %}
+
  

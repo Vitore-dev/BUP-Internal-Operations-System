@@ -31,6 +31,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('director/', include('director.dashboard_urls', namespace='director')),
     path('employee-services/', include('employee_services.urls', namespace='employee_services')),
+    path('onboarding/', include('onboarding.urls', namespace='onboarding')),
     
 ]
 

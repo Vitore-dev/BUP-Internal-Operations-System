@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Delete form{% endblock %}
+
+{% block content %}
+{% include 'onboarding/_ob_styles.html' %}
+<div class="page-title">Delete: {{ req.recipient_name }}</div>
+<div class="page-sub">This permanently removes the form. It cannot be undone.</div>
+<div class="card"><div class="card-body ob">
+  <p>You are about to delete the personal details form of <b>{{ req.recipient_name }}</b>, sent {{ req.created_at|date:"d M Y" }}.</p>
+  <ul style="margin:12px 0 0 20px;">
+    <li>everything they filled in, including ID and bank details</li>
+    <li>{{ document_count }} attached document{{ document_count|pluralize }}, which are also removed from the server</li>
+  </ul>
+  <p style="margin-top:12px;">Make sure you have saved what you need into HR's own records first. The audit log will record who deleted it.</p>
+  <form method="POST" class="ob-actions">{% csrf_token %}
+    <button type="submit" class="ob-btn ob-btn-danger">Yes, delete this form permanently</button>
+    <a href="{% url 'onboarding:hr_detail' req.pk %}" class="ob-btn">Keep it</a>
+  </form>
+</div></div>
+{% endblock %}

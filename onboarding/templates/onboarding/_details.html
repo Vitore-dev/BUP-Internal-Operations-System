@@ -1,0 +1,39 @@
+<div class="ob">
+  <h2>Personal Details</h2>
+  <div class="ob-scroll"><table class="ob-table">
+    <tr><td class="ob-key">Names</td><td>{{ req.full_names|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Date of Birth</td><td>{% if req.date_of_birth %}{{ req.date_of_birth|date:"d F Y" }}{% else %}—{% endif %}</td></tr>
+    <tr><td class="ob-key">Gender</td><td>{{ req.get_gender_display|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Marital Status</td><td>{{ req.get_marital_status_display|default:"—" }}</td></tr>
+    <tr><td class="ob-key">ID no / Passport and Expiry</td><td>{{ req.id_number|default:"—" }}{% if req.id_expiry %} &nbsp;(expires {{ req.id_expiry|date:"d F Y" }}){% endif %}</td></tr>
+    <tr><td class="ob-key">Postal address</td><td>{{ req.postal_address|default:"—"|linebreaksbr }}</td></tr>
+    <tr><td class="ob-key">Physical address</td><td>{{ req.physical_address|default:"—"|linebreaksbr }}</td></tr>
+    <tr><td class="ob-key">Telephone No.</td><td>{{ req.telephone|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Date of assumption of duty</td><td>{% if req.assumption_date %}{{ req.assumption_date|date:"d F Y" }}{% else %}—{% endif %}</td></tr>
+    <tr><td class="ob-key">Position title</td><td>{{ req.position_title|default:"—" }}</td></tr>
+    <tr><td class="ob-key">E-mail address</td><td>{{ req.email_address|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Program</td><td>{{ req.program|default:"—" }}</td></tr>
+  </table></div>
+  <h2 style="margin-top:22px;">Next of kin</h2>
+  <div class="ob-scroll"><table class="ob-table">
+    <tr><td class="ob-key">Names</td><td>{{ req.kin_name|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Relationship</td><td>{{ req.kin_relationship|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Telephone Numbers</td><td>{{ req.kin_telephone|default:"—" }}</td></tr>
+  </table></div>
+  <h2 style="margin-top:22px;">Emergency contact person</h2>
+  <div class="ob-scroll"><table class="ob-table">
+    <tr><td class="ob-key">Contact Names</td><td>{{ req.emergency_name|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Telephone Numbers</td><td>{{ req.emergency_telephone|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Relationship</td><td>{{ req.emergency_relationship|default:"—" }}</td></tr>
+  </table></div>
+  <h2 style="margin-top:22px;">Academic qualifications</h2>
+  <p>{{ req.qualifications|default:"—"|linebreaksbr }}</p>
+  <h2 style="margin-top:22px;">Bank details</h2>
+  <div class="ob-scroll"><table class="ob-table">
+    <tr><td class="ob-key">Bank Name</td><td>{{ req.bank_name|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Branch Code</td><td>{{ req.bank_branch_code|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Branch Name</td><td>{{ req.bank_branch_name|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Account Number</td><td>{{ req.bank_account_number|default:"—" }}</td></tr>
+    <tr><td class="ob-key">Names appearing on the account</td><td>{{ req.bank_account_name|default:"—" }}</td></tr>
+  </table></div>
+</div>
